@@ -22,7 +22,7 @@
 #include <boost/exception/detail/type_info.hpp>
 #include <boost/exception/detail/clone_current_exception.hpp>
 #ifndef BOOST_NO_RTTI
-#include <boost/exception/detail/type_info.hpp> // exception_detail::demangle
+#include <boost/exception/detail/type_info.hpp> // exception_detail::demangle()
 #endif
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
