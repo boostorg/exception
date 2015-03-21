@@ -46,6 +46,16 @@ boost
         {
         }
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template <class Tag,class T>
+    inline
+    error_info<Tag,T>::
+    error_info( value_type && value ):
+        value_(std::move(value))
+        {
+        }
+#endif
+
     template <class Tag,class T>
     inline
     error_info<Tag,T>::
@@ -175,6 +185,22 @@ boost
             return x;
             }
 
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+        template <class E,class Tag,class T>
+        inline
+        E const &
+        set_info( E const & x, error_info<Tag,T> && v )
+            {
+            typedef error_info<Tag,T> error_info_tag_t;
+            shared_ptr<error_info_tag_t> p( new error_info_tag_t(std::move(v)) );
+            exception_detail::error_info_container * c=x.data_.get();
+            if( !c )
+                x.data_.adopt(c=new exception_detail::error_info_container_impl);
+            c->set(p,BOOST_EXCEPTION_STATIC_TYPEID(error_info_tag_t));
+            return x;
+            }
+#endif
+
         template <class T>
         struct
         derives_boost_exception
@@ -190,6 +216,16 @@ boost
         {
         return exception_detail::set_info(x,v);
         }
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    template <class E,class Tag,class T>
+    inline
+    typename enable_if<exception_detail::derives_boost_exception<E>,E const &>::type
+    operator<<( E const & x, error_info<Tag,T> && v )
+        {
+        return exception_detail::set_info(x,std::move(v));
+        }
+#endif
     }
 
 #if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)

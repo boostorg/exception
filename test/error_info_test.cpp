@@ -11,6 +11,9 @@
 
 struct throws_on_copy;
 struct non_printable { };
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+struct move_only;
+#endif
 
 struct
 user_data
@@ -43,6 +46,9 @@ typedef boost::error_info<struct tag_test_4,throws_on_copy> test_4;
 typedef boost::error_info<struct tag_test_5,std::string> test_5;
 typedef boost::error_info<struct tag_test_6,non_printable> test_6;
 typedef boost::error_info<struct tag_user_data,user_data> test_7;
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+typedef boost::error_info<struct tag_test_8,move_only> test_8;
+#endif
 
 struct
 test_exception:
@@ -62,6 +68,17 @@ throws_on_copy
         throw test_exception();
         }
     };
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+struct
+move_only
+    {
+    move_only() = default;
+    move_only( move_only const & ) = delete;
+    move_only( move_only && ) = default;
+    };
+#endif
+  
 
 void
 basic_test()
@@ -132,6 +149,14 @@ throw_test_2()
     {
     throw test_exception() << test_6(non_printable());
     }
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+void
+throw_test_3()
+    {
+    throw test_exception() << test_8(move_only());
+    }
+#endif
 
 void
 throw_catch_add_file_name( char const * name )
@@ -224,6 +249,24 @@ test_basic_throw_catch()
         {
         BOOST_TEST(false);
         }
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    try
+        {
+        throw_test_3();
+        BOOST_ASSERT(false);
+        }
+    catch(
+    boost::exception & x )
+        {
+        BOOST_TEST(boost::get_error_info<test_8>(x));
+        }
+    catch(
+    ... )
+        {
+        BOOST_TEST(false);
+        }
+#endif
     }
 
 void

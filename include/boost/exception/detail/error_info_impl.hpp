@@ -12,6 +12,7 @@
 #pragma warning(push,1)
 #endif
 
+#include <boost/config.hpp>
 #include <string>
 
 namespace
@@ -46,6 +47,13 @@ boost
         typedef T value_type;
 
         error_info( value_type const & value );
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+        error_info( value_type && value);
+        error_info( error_info const & ) = default;
+        error_info( error_info && ) = default;
+        error_info& operator=( error_info const & ) = default;
+        error_info& operator=( error_info && ) = default;
+#endif
         ~error_info() throw();
 
         value_type const &
