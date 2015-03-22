@@ -14,6 +14,7 @@
 
 #include <boost/config.hpp>
 #include <string>
+#include <utility>
 
 namespace
 boost
@@ -48,11 +49,13 @@ boost
 
         error_info( value_type const & value );
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-        error_info( value_type && value);
-        error_info( error_info const & ) = default;
-        error_info( error_info && ) = default;
-        error_info& operator=( error_info const & ) = default;
-        error_info& operator=( error_info && ) = default;
+        error_info( value_type && value );
+        error_info( error_info const & );
+        error_info( error_info && other ) 
+            BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(other.value_))));
+        error_info& operator=( error_info const & other );
+        error_info& operator=( error_info && other ) 
+            BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(other.value_ = std::move(other.value_)));
 #endif
         ~error_info() throw();
 

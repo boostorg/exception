@@ -16,8 +16,10 @@
 #include <boost/exception/to_string_stub.hpp>
 #include <boost/exception/detail/error_info_impl.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/config.hpp>
 #include <map>
+#include <utility>
 
 namespace
 boost
@@ -53,6 +55,44 @@ boost
     error_info( value_type && value ):
         value_(std::move(value))
         {
+        }
+
+    template <class Tag,class T>
+    inline
+    error_info<Tag,T>::
+    error_info( error_info const & other ):
+        value_(other.value_)
+        {
+        }
+
+    template <class Tag,class T>
+    inline
+    error_info<Tag,T>::
+    error_info( error_info && other ) 
+        BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(other.value_))))
+      : value_(std::move(other.value_))
+        {
+        }
+
+    template <class Tag,class T>
+    inline
+    error_info<Tag,T>& 
+    error_info<Tag,T>::
+    operator=( error_info const & other )
+        {
+          value_ = other.value_;
+          return *this;
+        }
+
+    template <class Tag,class T>
+    inline
+    error_info<Tag,T>& 
+    error_info<Tag,T>::
+    operator=( error_info && other ) 
+        BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(other.value_ = std::move(other.value_)))
+        {
+          value_ = std::move(other.value_);
+          return *this;
         }
 #endif
 
@@ -192,7 +232,7 @@ boost
         set_info( E const & x, error_info<Tag,T> && v )
             {
             typedef error_info<Tag,T> error_info_tag_t;
-            shared_ptr<error_info_tag_t> p( new error_info_tag_t(std::move(v)) );
+            shared_ptr<error_info_tag_t> p = boost::make_shared<error_info_tag_t>(std::move(v));
             exception_detail::error_info_container * c=x.data_.get();
             if( !c )
                 x.data_.adopt(c=new exception_detail::error_info_container_impl);

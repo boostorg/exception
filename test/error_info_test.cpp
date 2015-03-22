@@ -73,9 +73,11 @@ throws_on_copy
 struct
 move_only
     {
-    move_only() = default;
+    move_only(int x) : x_(x) {}
+    move_only( move_only && other ) : x_(other.x_) {}
+    int x_;
+   private:
     move_only( move_only const & ) = delete;
-    move_only( move_only && ) = default;
     };
 #endif
   
@@ -154,7 +156,7 @@ throw_test_2()
 void
 throw_test_3()
     {
-    throw test_exception() << test_8(move_only());
+    throw test_exception() << test_8(move_only(7));
     }
 #endif
 
@@ -260,6 +262,7 @@ test_basic_throw_catch()
     boost::exception & x )
         {
         BOOST_TEST(boost::get_error_info<test_8>(x));
+        BOOST_TEST(boost::get_error_info<test_8>(x)->x_ == 7);
         }
     catch(
     ... )
