@@ -35,6 +35,7 @@ run enable_error_info_test.cpp helper1.cpp ;
 run throw_exception_test.cpp helper2.cpp ;
 run errno_test.cpp ;
 run error_info_test.cpp ;
+run error_info_rv_test.cpp ;
 run diagnostic_information_test.cpp ;
 run refcount_ptr_test.cpp ;
 run current_exception_cast_test.cpp ;
