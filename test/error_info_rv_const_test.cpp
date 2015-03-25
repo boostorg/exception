@@ -12,11 +12,17 @@ main()
 	return 0;
 	}
 #else
+template <class I>
+I const
+rv_const( I i )
+	{
+	return i;
+	}
 template <class E,class I>
 E const &
 add_info( E const & e, I i )
 	{
-	return e << std::move(i);
+	return e << rv_const(i);
 	}
 #include "error_info_test.hpp"
 #endif
