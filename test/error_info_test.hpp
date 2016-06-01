@@ -1,4 +1,4 @@
-//Copyright (c) 2006-2009 Emil Dotchevski and Reverge Studios, Inc.
+//Copyright (c) 2006-2015 Emil Dotchevski and Reverge Studios, Inc.
 
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -69,7 +69,7 @@ basic_test()
     try
         {
         test_exception x;
-        x << test_1(1) << test_2(2u) << test_3(3.14159f);
+        add_info(add_info(add_info(x,test_1(1)),test_2(2u)),test_3(3.14159f));
         throw x;
         }
     catch(
@@ -86,7 +86,7 @@ basic_test()
     try
         {
         test_exception x;
-        x << test_1(1) << test_2(2u) << test_3(3.14159f);
+        add_info(add_info(add_info(x,test_1(1)),test_2(2u)),test_3(3.14159f));
         throw x;
         }
     catch(
@@ -105,7 +105,7 @@ exception_safety_test()
     test_exception x;
     try
         {
-        x << test_4(throws_on_copy());
+        add_info(x,test_4(throws_on_copy()));
         BOOST_TEST(false);
         }
     catch(
@@ -124,13 +124,13 @@ throw_empty()
 void
 throw_test_1( char const * value )
     {
-    throw test_exception() << test_5(std::string(value));
+    throw add_info(test_exception(),test_5(std::string(value)));
     }
 
 void
 throw_test_2()
     {
-    throw test_exception() << test_6(non_printable());
+    throw add_info(test_exception(),test_6(non_printable()));
     }
 
 void
@@ -144,7 +144,7 @@ throw_catch_add_file_name( char const * name )
     catch(
     boost::exception & x )
         {
-        x << test_5(std::string(name));
+        add_info(x,test_5(std::string(name)));
         throw;
         }     
     }
@@ -256,10 +256,10 @@ test_add_tuple()
     typedef boost::tuple<test_1,test_2,test_3,test_5> tuple_test_1235;
     try
         {
-        throw test_exception() << tuple_test_();
+        throw add_info(test_exception(),tuple_test_());
         }
     catch(
-    test_exception & x )
+    test_exception & )
         {
         }
     catch(
@@ -269,7 +269,7 @@ test_add_tuple()
         }
     try
         {
-        throw test_exception() << tuple_test_1(42);
+        throw add_info(test_exception(),tuple_test_1(42));
         }
     catch(
     test_exception & x )
@@ -283,7 +283,7 @@ test_add_tuple()
         }
     try
         {
-        throw test_exception() << tuple_test_12(42,42u);
+        throw add_info(test_exception(),tuple_test_12(42,42u));
         }
     catch(
     test_exception & x )
@@ -298,7 +298,7 @@ test_add_tuple()
         }
     try
         {
-        throw test_exception() << tuple_test_123(42,42u,42.0f);
+        throw add_info(test_exception(),tuple_test_123(42,42u,42.0f));
         }
     catch(
     test_exception & x )
@@ -314,7 +314,7 @@ test_add_tuple()
         }
     try
         {
-        throw test_exception() << tuple_test_1235(42,42u,42.0f,std::string("42"));
+        throw add_info(test_exception(),tuple_test_1235(42,42u,42.0f,std::string("42")));
         }
     catch(
     test_exception & x )
@@ -337,7 +337,7 @@ test_lifetime1()
     int count=0;
     try
         {
-        throw test_exception() << test_7(user_data(count));
+        throw add_info(test_exception(),test_7(user_data(count)));
         }
     catch(
     boost::exception & x )
@@ -359,7 +359,7 @@ test_lifetime2()
     int count=0;
         {
         boost::exception_ptr ep;
-        test_exception e; e<<test_7(user_data(count));
+        test_exception e; add_info(e,test_7(user_data(count)));
         ep=boost::copy_exception(e);
         BOOST_TEST(count>0);
         }
