@@ -202,6 +202,8 @@ boost
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
         template <class E,class Tag,class T>
         E const & set_info( E const &, error_info<Tag,T> && );
+		template <class T>
+		class set_info_rv;
 		template <class Tag,class T>
 		class
 		set_info_rv<error_info<Tag,T> >
