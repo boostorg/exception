@@ -34,7 +34,7 @@ boost
         {
         std::ostringstream tmp;
         int v=e.value();
-        tmp << v << ", \"" << strerror(v) << "\"";
+        tmp  << '[' << error_info_name(e) << "] = " << v << ", \"" << strerror(v) << "\"\n";
         return tmp.str();
         }
     }
