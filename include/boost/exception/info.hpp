@@ -15,7 +15,7 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/to_string_stub.hpp>
 #include <boost/exception/detail/error_info_impl.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/exception/detail/shared_ptr.hpp>
 #include <boost/config.hpp>
 #include <map>
 
