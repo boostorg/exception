@@ -203,9 +203,9 @@ boost
         template <class E,class Tag,class T>
         E const & set_info( E const &, error_info<Tag,T> && );
 		template <class T>
-		class set_info_rv;
+		struct set_info_rv;
 		template <class Tag,class T>
-		class
+		struct
 		set_info_rv<error_info<Tag,T> >
 			{
 			template <class E,class Tag1,class T1>
@@ -225,7 +225,7 @@ boost
 				}
 			};
 		template <>
-		class
+		struct
 		set_info_rv<throw_function>
 			{
 			template <class E,class Tag1,class T1>
@@ -240,7 +240,7 @@ boost
 				}
 			};
 		template <>
-		class
+		struct
 		set_info_rv<throw_file>
 			{
 			template <class E,class Tag1,class T1>
@@ -255,7 +255,7 @@ boost
 				}
 			};
 		template <>
-		class
+		struct
 		set_info_rv<throw_line>
 			{
 			template <class E,class Tag1,class T1>
