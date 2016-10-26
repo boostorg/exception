@@ -8,15 +8,15 @@
 #ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
 int
 main()
-	{
-	return 0;
-	}
+    {
+    return 0;
+    }
 #else
 template <class E,class I>
 E const &
 add_info( E const & e, I i )
-	{
-	return e << std::move(i);
-	}
+    {
+    return e << std::move(i);
+    }
 #include "error_info_test.hpp"
 #endif

@@ -7,7 +7,7 @@
 template <class E,class I>
 E const &
 add_info( E const & e, I i )
-	{
-	return e << i;
-	}
+    {
+    return e << i;
+    }
 #include "error_info_test.hpp"

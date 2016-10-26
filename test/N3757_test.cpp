@@ -37,7 +37,7 @@ main()
         throw my_exception();
         }
     catch(
-	boost::exception & e )
+    boost::exception & e )
         {
         e.set<tag1>(42);
         e.set<tag2>("42");
