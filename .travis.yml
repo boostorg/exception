@@ -45,7 +45,7 @@ matrix:
 
   include:
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-4.6.3 CXXSTD=c++11
+      env: TOOLSET=gcc COMPILER=g++ CXXSTD=c++11
 
     - os: linux
       env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=c++11
