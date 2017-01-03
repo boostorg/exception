@@ -49,6 +49,7 @@ boost
             v_(v)
             {
             }
+#if (__GNUC__*100+__GNUC_MINOR__!=406) //workaround for g++ bug
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
         error_info( error_info const & x ):
             v_(x.v_)
@@ -62,6 +63,7 @@ boost
             v_(std::move(x.v_))
             {
             }
+#endif
 #endif
         ~error_info() throw()
             {
