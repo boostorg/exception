@@ -26,7 +26,6 @@ addons:
   apt:
     packages:
       - g++-4.9
-      - g++-4.6.3
       - g++-5
       - g++-6
       - clang-3.6
