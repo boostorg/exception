@@ -47,24 +47,24 @@ boost
 
         typedef T value_type;
 
-        error_info( value_type const & value );
+        error_info( value_type const & v );
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
         error_info( error_info const & );
-        error_info( value_type && value ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(value))));
-        error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.value_))));
+        error_info( value_type && v ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(v))));
+        error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.v_))));
 #endif
         ~error_info() throw();
 
         value_type const &
         value() const
             {
-            return value_;
+            return v_;
             }
 
         value_type &
         value()
             {
-            return value_;
+            return v_;
             }
 
         private:
@@ -75,7 +75,7 @@ boost
 
         std::string name_value_string() const;
 
-        value_type value_;
+        value_type v_;
         };
     }
 

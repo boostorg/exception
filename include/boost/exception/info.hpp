@@ -41,8 +41,8 @@ boost
     template <class Tag,class T>
     inline
     error_info<Tag,T>::
-    error_info( value_type const & value ):
-        value_(value)
+    error_info( value_type const & v ):
+        v_(v)
         {
         }
 
@@ -51,21 +51,21 @@ boost
     inline
     error_info<Tag,T>::
     error_info( error_info const & x ):
-        value_(x.value_)
+        v_(x.v_)
         {
         }
     template <class Tag,class T>
     inline
     error_info<Tag,T>::
-    error_info( value_type && value ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(value)))):
-        value_(std::move(value))
+    error_info( value_type && v ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(v)))):
+        v_(std::move(v))
         {
         }
     template <class Tag,class T>
     inline
     error_info<Tag,T>::
-    error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.value_)))):
-        value_(std::move(x.value_))
+    error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.v_)))):
+        v_(std::move(x.v_))
         {
         }
 #endif
