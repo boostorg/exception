@@ -3,12 +3,13 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>
 #include <boost/exception/error_info.hpp>
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
 #include <boost/exception/get_error_info.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <string>
+#include <string.h>
 
 struct my_exception: virtual boost::exception {};
 typedef boost::error_info<struct error_info_string_, std::string> error_info_string;
