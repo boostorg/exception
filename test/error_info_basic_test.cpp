@@ -16,14 +16,14 @@ typedef boost::error_info<struct error_info_string_, std::string> error_info_str
 
 int
 main()
-	{
-	try
-		{
-	    throw my_exception() << error_info_string("doh");
-		}
-	catch( my_exception & e )
-		{
-		BOOST_TEST(boost::get_error_info<error_info_string>(e) && !strcmp(boost::get_error_info<error_info_string>(e)->c_str(),"doh"));
-		}
+    {
+    try
+        {
+        throw my_exception() << error_info_string("doh");
+        }
+    catch( my_exception & e )
+        {
+        BOOST_TEST(boost::get_error_info<error_info_string>(e) && !strcmp(boost::get_error_info<error_info_string>(e)->c_str(),"doh"));
+        }
     return 0;
-	}
+    }
