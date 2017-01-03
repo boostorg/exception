@@ -48,28 +48,28 @@ matrix:
       env: TOOLSET=gcc COMPILER=g++
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=c++11
+      env: TOOLSET=gcc COMPILER=g++-4.9
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-5 CXXSTD=c++11
+      env: TOOLSET=gcc COMPILER=g++-5
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++11
+      env: TOOLSET=gcc COMPILER=g++-6
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++1z
+      env: TOOLSET=gcc COMPILER=g++-6
 
     - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++11
+      env: TOOLSET=clang COMPILER=clang++-3.6
 
     - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.7 CXXSTD=c++11
+      env: TOOLSET=clang COMPILER=clang++-3.7
 
     - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.8 CXXSTD=c++11
+      env: TOOLSET=clang COMPILER=clang++-3.8
 
     - os: osx
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=c++11
+      env: TOOLSET=clang COMPILER=clang++
 
 install:
   - cd ..
@@ -86,7 +86,7 @@ install:
 
 script:
   - |-
-    echo "using $TOOLSET : : $COMPILER : <cxxflags>-std=$CXXSTD ;" > ~/user-config.jam
+    echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
   - ./b2 libs/exception/test toolset=$TOOLSET
 
 notifications:
