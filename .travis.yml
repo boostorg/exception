@@ -45,31 +45,28 @@ matrix:
 
   include:
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++
+      env: TOOLSET=gcc COMPILER=g++ CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-4.9
+      env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-5
+      env: TOOLSET=gcc COMPILER=g++-5 CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-6
+      env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=gcc COMPILER=g++-6
+      env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.6
+      env: TOOLSET=clang COMPILER=clang++-3.7 CXXSTD=c++0x
 
     - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.7
-
-    - os: linux
-      env: TOOLSET=clang COMPILER=clang++-3.8
+      env: TOOLSET=clang COMPILER=clang++-3.8 CXXSTD=c++0x
 
     - os: osx
-      env: TOOLSET=clang COMPILER=clang++
+      env: TOOLSET=clang COMPILER=clang++ CXXSTD=c++0x
 
 install:
   - cd ..
@@ -86,7 +83,7 @@ install:
 
 script:
   - |-
-    echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
+    echo "using $TOOLSET : : $COMPILER : <cxxflags>-std=$CXXSTD ;" > ~/user-config.jam
   - ./b2 libs/exception/test toolset=$TOOLSET
 
 notifications:
