@@ -5,6 +5,9 @@
 
 #ifndef UUID_7E83C166200811DE885E826156D89593
 #define UUID_7E83C166200811DE885E826156D89593
+
+#include <boost/config.hpp>
+
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma GCC system_header
 #endif

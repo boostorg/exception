@@ -5,16 +5,17 @@
 
 #ifndef UUID_CE6983AC753411DDA764247956D89593
 #define UUID_CE6983AC753411DDA764247956D89593
+
+#include <boost/config.hpp>
+#include <utility>
+#include <string>
+
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma GCC system_header
 #endif
 #if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma warning(push,1)
 #endif
-
-#include <boost/config.hpp>
-#include <utility>
-#include <string>
 
 namespace
 boost
@@ -49,6 +50,7 @@ boost
             v_(v)
             {
             }
+#if (__GNUC__*100+__GNUC_MINOR__!=406) //workaround for g++ bug
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
         error_info( error_info const & x ):
             v_(x.v_)
@@ -62,6 +64,7 @@ boost
             v_(std::move(x.v_))
             {
             }
+#endif
 #endif
         ~error_info() throw()
             {

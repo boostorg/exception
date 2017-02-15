@@ -5,16 +5,13 @@
 
 #ifndef UUID_0552D49838DD11DD90146B8956D89593
 #define UUID_0552D49838DD11DD90146B8956D89593
-#if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
-#pragma GCC system_header
-#endif
-#if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
-#pragma warning(push,1)
-#endif
 
 #include <boost/config.hpp>
 #include <boost/exception/get_error_info.hpp>
 #include <boost/exception/info.hpp>
+#ifndef BOOST_NO_EXCEPTIONS
+#include <boost/exception/current_exception_cast.hpp>
+#endif
 #include <boost/utility/enable_if.hpp>
 #ifndef BOOST_NO_RTTI
 #include <boost/core/demangle.hpp>
@@ -23,8 +20,14 @@
 #include <sstream>
 #include <string>
 
+#if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
+#pragma GCC system_header
+#endif
+#if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
+#pragma warning(push,1)
+#endif
+
 #ifndef BOOST_NO_EXCEPTIONS
-#include <boost/exception/current_exception_cast.hpp>
 namespace
 boost
     {
