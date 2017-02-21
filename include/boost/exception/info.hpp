@@ -42,45 +42,6 @@ boost
 
     template <class Tag,class T>
     inline
-    error_info<Tag,T>::
-    error_info( value_type const & value ):
-        value_(value)
-        {
-        }
-
-#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    template <class Tag,class T>
-    inline
-    error_info<Tag,T>::
-    error_info( error_info const & x ):
-        value_(x.value_)
-        {
-        }
-    template <class Tag,class T>
-    inline
-    error_info<Tag,T>::
-    error_info( value_type && value ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(value)))):
-        value_(std::move(value))
-        {
-        }
-    template <class Tag,class T>
-    inline
-    error_info<Tag,T>::
-    error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.value_)))):
-        value_(std::move(x.value_))
-        {
-        }
-#endif
-
-    template <class Tag,class T>
-    inline
-    error_info<Tag,T>::
-    ~error_info() throw()
-        {
-        }
-
-    template <class Tag,class T>
-    inline
     std::string
     error_info<Tag,T>::
     name_value_string() const

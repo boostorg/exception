@@ -45,38 +45,47 @@ boost
         public exception_detail::error_info_base
         {
         public:
-
         typedef T value_type;
-
-        error_info( value_type const & value );
+        error_info( value_type const & v ):
+            v_(v)
+            {
+            }
+#if (__GNUC__*100+__GNUC_MINOR__!=406) //workaround for g++ bug
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-        error_info( error_info const & );
-        error_info( value_type && value ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(value))));
-        error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.value_))));
+        error_info( error_info const & x ):
+            v_(x.v_)
+            {
+            }
+        error_info( value_type && v ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(v)))):
+            v_(std::move(v))
+            {
+            }
+        error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.v_)))):
+            v_(std::move(x.v_))
+            {
+            }
 #endif
-        ~error_info() throw();
-
+#endif
+        ~error_info() throw()
+            {
+            }
         value_type const &
         value() const
             {
-            return value_;
+            return v_;
             }
-
         value_type &
         value()
             {
-            return value_;
+            return v_;
             }
-
         private:
         error_info & operator=( error_info const & );
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
         error_info & operator=( error_info && x );
 #endif
-
         std::string name_value_string() const;
-
-        value_type value_;
+        value_type v_;
         };
     }
 
