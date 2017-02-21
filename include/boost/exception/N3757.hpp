@@ -5,15 +5,16 @@
 
 #ifndef UUID_9011016A11A711E3B46CD9FA6088709B
 #define UUID_9011016A11A711E3B46CD9FA6088709B
+
+#include <boost/exception/info.hpp>
+#include <boost/exception/get_error_info.hpp>
+
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma GCC system_header
 #endif
 #if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma warning(push,1)
 #endif
-
-#include <boost/exception/info.hpp>
-#include <boost/exception/get_error_info.hpp>
 
 namespace
 boost
