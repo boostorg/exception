@@ -29,8 +29,7 @@ boost
             public:
 
             virtual std::string name_value_string() const = 0;
-
-            protected:
+            virtual error_info_base * clone() const = 0;
 
             virtual
             ~error_info_base() throw()
@@ -44,6 +43,11 @@ boost
     error_info:
         public exception_detail::error_info_base
         {
+        error_info_base *
+        clone() const
+            {
+            return new error_info<Tag,T>(*this);
+            }
         public:
         typedef T value_type;
         error_info( value_type const & v ):
