@@ -142,7 +142,11 @@ boost
                 refcount_ptr<error_info_container> p;
                 error_info_container_impl * c=new error_info_container_impl;
                 p.adopt(c);
-                c->info_ = info_;
+                for( error_info_map::const_iterator i=info_.begin(),e=info_.end(); i!=e; ++i )
+                    {
+                    shared_ptr<error_info_base> cp(i->second->clone());
+                    c->info_.insert(std::make_pair(i->first,cp));
+                    }
                 return p;
                 }
             };
