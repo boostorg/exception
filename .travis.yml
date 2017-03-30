@@ -65,6 +65,9 @@ matrix:
       env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=c++0x
 
     - os: linux
+      env: TOOLSET=clang COMPILER=clang++-3.0 CXXSTD=c++0x
+
+    - os: linux
       env: TOOLSET=clang COMPILER=clang++-3.6 CXXSTD=c++0x
 
     - os: linux

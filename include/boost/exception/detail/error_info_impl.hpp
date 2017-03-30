@@ -7,6 +7,9 @@
 #define UUID_CE6983AC753411DDA764247956D89593
 
 #include <boost/config.hpp>
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#endif
 #include <utility>
 #include <string>
 
@@ -56,11 +59,11 @@ boost
             v_(x.v_)
             {
             }
-        error_info( value_type && v ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(v)))):
+        error_info( value_type && v ) BOOST_NOEXCEPT_IF(boost::is_nothtrow_move_contluctible<value_type>::value)):
             v_(std::move(v))
             {
             }
-        error_info( error_info && x ) BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(value_type(std::move(x.v_)))):
+        error_info( error_info && x ) BOOST_NOEXCEPT_IF(boost::is_nothtrow_move_contluctible<value_type>::value)):
             v_(std::move(x.v_))
             {
             }
