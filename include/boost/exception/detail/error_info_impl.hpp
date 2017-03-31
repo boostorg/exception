@@ -63,11 +63,11 @@ boost
             v_(x.v_)
             {
             }
-        error_info( value_type && v ) BOOST_NOEXCEPT_IF(boost::is_nothtrow_move_contluctible<value_type>::value)):
+        error_info( T && v ) BOOST_NOEXCEPT_IF(boost::is_nothrow_move_constructible<T>::value):
             v_(std::move(v))
             {
             }
-        error_info( error_info && x ) BOOST_NOEXCEPT_IF(boost::is_nothtrow_move_contluctible<value_type>::value)):
+        error_info( error_info && x ) BOOST_NOEXCEPT_IF(boost::is_nothrow_move_constructible<T>::value):
             v_(std::move(x.v_))
             {
             }
