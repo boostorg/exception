@@ -30,12 +30,14 @@ addons:
       - g++-4.9
       - g++-5
       - g++-6
+      - clang-3.0
       - clang-3.6
       - clang-3.7
       - clang-3.8
     sources:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise
+      - llvm-toolchain-precise-3.0
       - llvm-toolchain-precise-3.6
       - llvm-toolchain-precise-3.7
       - llvm-toolchain-precise-3.8
