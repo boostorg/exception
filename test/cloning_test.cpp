@@ -395,6 +395,11 @@ main()
             BOOST_TEST(false);
             }
         catch(
+        derives_std_exception & )
+            {
+            //Yay! Non-intrusive cloning supported!
+            }
+        catch(
         boost::unknown_exception & e )
             {
 #ifndef BOOST_NO_RTTI
@@ -442,6 +447,14 @@ main()
             {
             rethrow_exception(p);
             BOOST_TEST(false);
+            }
+        catch(
+        derives_std_boost_exception & x )
+            {
+            //Yay! Non-intrusive cloning supported!
+            BOOST_TEST(boost::get_error_info<my_info>(x));
+            if( int const * p=boost::get_error_info<my_info>(x) )
+                BOOST_TEST(*p==42);
             }
         catch(
         boost::unknown_exception & x )
@@ -503,6 +516,14 @@ main()
             {
             rethrow_exception(p);
             BOOST_TEST(false);
+            }
+        catch(
+        derives_boost_exception & x )
+            {
+            //Yay! Non-intrusive cloning supported!
+            BOOST_TEST(boost::get_error_info<my_info>(x));
+            if( int const * p=boost::get_error_info<my_info>(x) )
+                BOOST_TEST(*p==42);
             }
         catch(
         boost::unknown_exception & x )
