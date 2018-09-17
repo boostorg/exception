@@ -7,7 +7,7 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
 #include <boost/exception/get_error_info.hpp>
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <string>
 #include <string.h>
 
@@ -25,5 +25,5 @@ main()
         {
         BOOST_TEST(boost::get_error_info<error_info_string>(e) && !strcmp(boost::get_error_info<error_info_string>(e)->c_str(),"doh"));
         }
-    return 0;
+    return boost::report_errors();
     }
