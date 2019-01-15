@@ -45,6 +45,10 @@ boost
         std::exception const * se=current_exception_cast<std::exception const>();
         if( be || se )
             return exception_detail::diagnostic_information_impl(be,se,true,verbose);
+#if defined(__GLIBCXX__) && __cplusplus >= 201103L && !defined(BOOST_NO_RTTI)
+        else if (auto* p=std::current_exception().__cxa_exception_type())
+            return "Dynamic exception type: "+boost::core::demangle(p->name());
+#endif
         else
             return "No diagnostic information available.";
         }
