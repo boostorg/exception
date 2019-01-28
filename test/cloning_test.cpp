@@ -73,7 +73,7 @@ derives_std_boost_exception:
         {
         }
 
-    char const * what() const throw()
+    char const * what() const BOOST_NOEXCEPT_OR_NOTHROW
         {
         return wh_;
         }

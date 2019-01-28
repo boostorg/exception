@@ -28,7 +28,7 @@ error1:
     boost::exception
     {
     char const *
-    what() const throw()
+    what() const BOOST_NOEXCEPT_OR_NOTHROW
         {
         return "error1";
         }
@@ -45,7 +45,7 @@ error3:
     std::exception
     {
     char const *
-    what() const throw()
+    what() const BOOST_NOEXCEPT_OR_NOTHROW
         {
         return "error3";
         }
@@ -57,7 +57,7 @@ error4:
     boost::exception
     {
     char const *
-    what() const throw()
+    what() const BOOST_NOEXCEPT_OR_NOTHROW
         {
         return diagnostic_information_what(*this);
         }

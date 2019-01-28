@@ -175,7 +175,7 @@ boost
 
     inline
     char const *
-    diagnostic_information_what( exception const & e, bool verbose=true ) throw()
+    diagnostic_information_what( exception const & e, bool verbose=true ) BOOST_NOEXCEPT_OR_NOTHROW
         {
         char const * w=0;
 #ifndef BOOST_NO_EXCEPTIONS

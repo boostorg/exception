@@ -20,7 +20,7 @@ boost
             }
 
         derives_boost_exception::
-        ~derives_boost_exception() throw()
+        ~derives_boost_exception() BOOST_NOEXCEPT_OR_NOTHROW
             {
             }
 
@@ -32,7 +32,7 @@ boost
             }
 
         derives_boost_exception_virtually::
-        ~derives_boost_exception_virtually() throw()
+        ~derives_boost_exception_virtually() BOOST_NOEXCEPT_OR_NOTHROW
             {
             }
 
@@ -44,7 +44,7 @@ boost
             }
 
         derives_std_exception::
-        ~derives_std_exception() throw()
+        ~derives_std_exception() BOOST_NOEXCEPT_OR_NOTHROW
             {
             }
 

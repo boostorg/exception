@@ -87,7 +87,7 @@ exc:
         }
 
     virtual
-    ~exc() throw()
+    ~exc() BOOST_NOEXCEPT_OR_NOTHROW
         {
         --exc_count;
         }
