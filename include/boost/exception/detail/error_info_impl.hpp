@@ -46,7 +46,7 @@ boost
     error_info:
         public exception_detail::error_info_base
         {
-        error_info_base *
+        exception_detail::error_info_base *
         clone() const
             {
             return new error_info<Tag,T>(*this);
