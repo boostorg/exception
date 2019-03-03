@@ -29,7 +29,7 @@ err:
         }
 
     virtual
-    ~err() throw()
+    ~err() BOOST_NOEXCEPT_OR_NOTHROW
         {
         --exc_count;
         }

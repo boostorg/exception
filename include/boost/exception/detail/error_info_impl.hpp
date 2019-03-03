@@ -35,7 +35,7 @@ boost
             virtual error_info_base * clone() const = 0;
 
             virtual
-            ~error_info_base() throw()
+            ~error_info_base() BOOST_NOEXCEPT_OR_NOTHROW
                 {
                 }
             };
@@ -73,7 +73,7 @@ boost
             }
 #endif
 #endif
-        ~error_info() throw()
+        ~error_info() BOOST_NOEXCEPT_OR_NOTHROW
             {
             }
         value_type const &
