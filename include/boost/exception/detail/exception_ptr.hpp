@@ -31,6 +31,11 @@
 #pragma warning(push,1)
 #endif
 
+// temporary solution: assume that if 'noexcept' is supported then std::exception_ptr is also supported
+#ifndef BOOST_NO_CXX11_NOEXCEPT
+#define BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#endif
+
 namespace
 boost
     {
@@ -412,11 +417,14 @@ boost
                         {
                         return exception_detail::current_exception_std_exception(e);
                         }
+#ifndef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+                    // this case can be handled losslesly with std::current_exception() (see below)
                     catch(
                     std::exception & e )
                         {
                         return exception_detail::current_exception_unknown_std_exception(e);
                         }
+#endif
                     catch(
                     boost::exception & e )
                         {
@@ -425,7 +433,22 @@ boost
                     catch(
                     ... )
                         {
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+                        try
+                            {
+                            // wrap the std::exception_ptr in a clone-enabled Boost.Exception object
+                            exception_detail::clone_base const& base {
+                                boost::enable_current_exception(std::current_exception())};
+                            return exception_ptr(shared_ptr<exception_detail::clone_base const>(base.clone()));
+                            }
+                        catch(
+                        ...)
+                            {
+                            return exception_detail::current_exception_unknown_exception();
+                            }
+#else
                         return exception_detail::current_exception_unknown_exception();
+#endif
                         }
                     }
                 }
@@ -461,7 +484,20 @@ boost
     rethrow_exception( exception_ptr const & p )
         {
         BOOST_ASSERT(p);
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+        try
+            {
+            p.ptr_->rethrow();
+            }
+        catch(
+        const std::exception_ptr& std_ep)
+            {
+            // if an std::exception_ptr was wrapped above then rethrow it
+            std::rethrow_exception(std_ep);
+            }
+#else
         p.ptr_->rethrow();
+#endif
         BOOST_ASSERT(0);
         #if defined(UNDER_CE)
             // some CE platforms don't define ::abort()

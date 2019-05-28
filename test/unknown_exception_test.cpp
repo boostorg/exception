@@ -38,6 +38,25 @@ throw_unknown_exception()
     throw test_exception();
     }
 
+struct
+user_defined_exception
+    {
+        user_defined_exception(int d):data(d){}
+        int data;
+    };
+
+void
+throw_user_defined_exception()
+    {
+    throw user_defined_exception(42);
+    }
+
+void
+throw_builtin_exception()
+    {
+    throw 42;
+    }
+
 int
 main()
     {
@@ -132,6 +151,116 @@ main()
             {
             //Yay! Non-intrusive cloning supported!
             }
+        catch(
+        ... )
+            {
+            BOOST_TEST(false);
+            }
+        }
+    try
+        {
+        throw_user_defined_exception();
+        }
+    catch(
+    ... )
+        {
+        boost::exception_ptr ep=boost::current_exception();
+        try
+            {
+            rethrow_exception(ep);
+            }
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+        catch(
+        user_defined_exception & x)
+            {
+            //Yay! std::current_exception to the rescue!
+            BOOST_TEST( 42==x.data );
+            }
+#else
+        catch(
+        boost::unknown_exception & )
+            {
+            //Boo! user defined exception was transported as a boost::unknown_exception
+            }
+#endif
+        catch(
+        ... )
+            {
+            BOOST_TEST(false);
+            }
+        try
+            {
+            rethrow_exception(ep);
+            }
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+        catch(
+        user_defined_exception & x)
+            {
+            //Yay! std::current_exception to the rescue!
+            BOOST_TEST( 42==x.data );
+            }
+#else
+        catch(
+        boost::unknown_exception & )
+            {
+            //Boo! user defined exception was transported as a boost::unknown_exception
+            }
+#endif
+        catch(
+        ... )
+            {
+            BOOST_TEST(false);
+            }
+        }
+    try
+        {
+        throw_builtin_exception();
+        }
+    catch(
+    ... )
+        {
+        boost::exception_ptr ep=boost::current_exception();
+        try
+            {
+            rethrow_exception(ep);
+            }
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+        catch(
+        int & x)
+            {
+            //Yay! std::current_exception to the rescue!
+            BOOST_TEST( 42==x );
+            }
+#else
+        catch(
+        boost::unknown_exception & )
+            {
+            //Boo! builtin exception was transported as a boost::unknown_exception
+            }
+#endif
+        catch(
+        ... )
+            {
+            BOOST_TEST(false);
+            }
+        try
+            {
+            rethrow_exception(ep);
+            }
+#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+        catch(
+        int & x)
+            {
+            //Yay! std::current_exception to the rescue!
+            BOOST_TEST( 42==x );
+            }
+#else
+        catch(
+        boost::unknown_exception & )
+            {
+            //Boo! builtin exception was transported as a boost::unknown_exception
+            }
+#endif
         catch(
         ... )
             {
