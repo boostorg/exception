@@ -17,7 +17,7 @@ my_exception:
     std::exception
     {
     char const *
-    what() const throw()
+    what() const BOOST_NOEXCEPT_OR_NOTHROW
         {
         return "my_exception";
         }

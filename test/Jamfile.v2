@@ -71,3 +71,5 @@ compile errinfo_file_name_hpp_test.cpp ;
 compile errinfo_file_open_mode_hpp_test.cpp ;
 compile errinfo_nested_exception_hpp_test.cpp ;
 compile errinfo_type_info_name_hpp_test.cpp ;
+
+compile bug_11874_test.cpp ;

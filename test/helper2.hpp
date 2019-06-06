@@ -21,7 +21,7 @@ boost
             public std::exception
             {
             explicit derives_boost_exception( int x );
-            virtual ~derives_boost_exception() throw();
+            virtual ~derives_boost_exception() BOOST_NOEXCEPT_OR_NOTHROW;
             int x_;
             };
 
@@ -31,7 +31,7 @@ boost
             public std::exception
             {
             explicit derives_boost_exception_virtually( int x );
-            virtual ~derives_boost_exception_virtually() throw();
+            virtual ~derives_boost_exception_virtually() BOOST_NOEXCEPT_OR_NOTHROW;
             int x_;
             };
 
@@ -40,7 +40,7 @@ boost
             public std::exception
             {
             explicit derives_std_exception( int x );
-            virtual ~derives_std_exception() throw();
+            virtual ~derives_std_exception() BOOST_NOEXCEPT_OR_NOTHROW;
             int x_;
             };
 
