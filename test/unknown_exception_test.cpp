@@ -169,7 +169,7 @@ main()
             {
             rethrow_exception(ep);
             }
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         catch(
         user_defined_exception & x)
             {
@@ -192,7 +192,7 @@ main()
             {
             rethrow_exception(ep);
             }
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         catch(
         user_defined_exception & x)
             {
@@ -224,7 +224,7 @@ main()
             {
             rethrow_exception(ep);
             }
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         catch(
         int & x)
             {
@@ -247,7 +247,7 @@ main()
             {
             rethrow_exception(ep);
             }
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         catch(
         int & x)
             {
