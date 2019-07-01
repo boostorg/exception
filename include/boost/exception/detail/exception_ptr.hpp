@@ -31,11 +31,6 @@
 #pragma warning(push,1)
 #endif
 
-// temporary solution: assume that if 'noexcept' is supported then std::exception_ptr is also supported
-#ifndef BOOST_NO_CXX11_NOEXCEPT
-#define BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
-#endif
-
 namespace
 boost
     {
@@ -417,7 +412,7 @@ boost
                         {
                         return exception_detail::current_exception_std_exception(e);
                         }
-#ifndef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifdef BOOST_NO_CXX11_HDR_EXCEPTION
                     // this case can be handled losslesly with std::current_exception() (see below)
                     catch(
                     std::exception & e )
@@ -433,7 +428,7 @@ boost
                     catch(
                     ... )
                         {
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
                         try
                             {
                             // wrap the std::exception_ptr in a clone-enabled Boost.Exception object
@@ -484,7 +479,7 @@ boost
     rethrow_exception( exception_ptr const & p )
         {
         BOOST_ASSERT(p);
-#ifdef BOOST_EXCEPTION_HAS_STD_EXCEPTION_PTR
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         try
             {
             p.ptr_->rethrow();
