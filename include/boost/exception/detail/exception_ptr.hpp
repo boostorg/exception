@@ -432,8 +432,8 @@ boost
                         try
                             {
                             // wrap the std::exception_ptr in a clone-enabled Boost.Exception object
-                            exception_detail::clone_base const& base {
-                                boost::enable_current_exception(std::current_exception())};
+                            exception_detail::clone_base const& base =
+                                boost::enable_current_exception(std::current_exception());
                             return exception_ptr(shared_ptr<exception_detail::clone_base const>(base.clone()));
                             }
                         catch(
