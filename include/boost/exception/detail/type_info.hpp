@@ -10,6 +10,9 @@
 #include <boost/core/typeinfo.hpp>
 #include <boost/core/demangle.hpp>
 #include <boost/current_function.hpp>
+#ifdef __APPLE__
+#include <boost/utility/string_view.hpp>
+#endif
 #include <string>
 
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
@@ -52,19 +55,42 @@ boost
         struct
         type_info_
             {
+        private:
             core::typeinfo const * type_;
 
+        public:
             explicit
             type_info_( core::typeinfo const & type ):
                 type_(&type)
                 {
                 }
 
+            const char * name() const
+                {
+                    return type_->name();
+                }
+
+            friend
+            bool
+            operator==( type_info_ const & a, type_info_ const & b )
+                {
+#ifdef __APPLE__
+                return boost::string_view(a.type_->name()) == boost::string_view(b.type_->name());
+#else
+                return (*a.type_) == (*b.type_);
+#endif
+                }
+
+
             friend
             bool
             operator<( type_info_ const & a, type_info_ const & b )
                 {
+#ifdef __APPLE__
+                return boost::string_view(a.type_->name()) < boost::string_view(b.type_->name());
+#else
                 return 0!=(a.type_->before(*b.type_));
+#endif
                 }
             };
         }
