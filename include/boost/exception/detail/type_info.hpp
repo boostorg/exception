@@ -3,8 +3,8 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef UUID_C3E1741C754311DDB2834CCA55D89593
-#define UUID_C3E1741C754311DDB2834CCA55D89593
+#ifndef BOOST_EXCEPTION_C3E1741C754311DDB2834CCA55D89593
+#define BOOST_EXCEPTION_C3E1741C754311DDB2834CCA55D89593
 
 #include <boost/config.hpp>
 #include <boost/core/typeinfo.hpp>

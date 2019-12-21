@@ -3,8 +3,8 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef UUID_81522C0EB56511DFAB613DB0DFD72085
-#define UUID_81522C0EB56511DFAB613DB0DFD72085
+#ifndef BOOST_EXCEPTION_81522C0EB56511DFAB613DB0DFD72085
+#define BOOST_EXCEPTION_81522C0EB56511DFAB613DB0DFD72085
 #if (__GNUC__*100+__GNUC_MINOR__>301) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
 #pragma GCC system_header
 #endif
