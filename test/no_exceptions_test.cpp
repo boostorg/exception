@@ -41,6 +41,11 @@ boost
 #endif
         exit(boost::report_errors());
         }
+    void
+    throw_exception(std::exception const & x, boost::source_location const &)
+        {
+        throw_exception(x);
+        }
     }
 
 int

@@ -9,6 +9,7 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/workaround.hpp>
 #include <string>
+#include <ios>
 
 typedef boost::error_info<struct my_tag,int> my_info;
 
