@@ -6,6 +6,7 @@
 #define BOOST_NO_EXCEPTIONS
 #define BOOST_EXCEPTION_DISABLE
 #include <boost/throw_exception.hpp>
+#include <stdlib.h>
 
 class my_exception: public std::exception { };
 
