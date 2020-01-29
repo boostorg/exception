@@ -299,6 +299,14 @@ boost
                 return boost::copy_exception(unknown_exception(e));
             }
 
+#ifndef BOOST_NO_CXX11_HDR_EXCEPTION
+        struct
+        std_exception_ptr_wrapper
+            {
+            std::exception_ptr p;
+            };
+#endif
+
         inline
         exception_ptr
         current_exception_impl()
@@ -432,8 +440,8 @@ boost
                         try
                             {
                             // wrap the std::exception_ptr in a clone-enabled Boost.Exception object
-                            exception_detail::clone_base const& base =
-                                boost::enable_current_exception(std::current_exception());
+                            exception_detail::clone_base const & base =
+                                boost::enable_current_exception(std_exception_ptr_wrapper{std::current_exception()});
                             return exception_ptr(shared_ptr<exception_detail::clone_base const>(base.clone()));
                             }
                         catch(
@@ -485,10 +493,10 @@ boost
             p.ptr_->rethrow();
             }
         catch(
-        const std::exception_ptr& std_ep)
+        exception_detail::std_exception_ptr_wrapper const & wrp)
             {
             // if an std::exception_ptr was wrapped above then rethrow it
-            std::rethrow_exception(std_ep);
+            std::rethrow_exception(wrp.p);
             }
 #else
         p.ptr_->rethrow();
