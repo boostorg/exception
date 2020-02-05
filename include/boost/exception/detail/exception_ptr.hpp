@@ -304,6 +304,18 @@ boost
         std_exception_ptr_wrapper
             {
             std::exception_ptr p;
+
+            explicit std_exception_ptr_wrapper( std::exception_ptr const & ptr ) BOOST_NOEXCEPT:
+                p(ptr)
+                {
+                }
+
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+            explicit std_exception_ptr_wrapper( std::exception_ptr && ptr ) BOOST_NOEXCEPT:
+                p(static_cast<std::exception_ptr &&>(ptr))
+                {
+                }
+#endif
             };
 #endif
 
@@ -441,7 +453,7 @@ boost
                             {
                             // wrap the std::exception_ptr in a clone-enabled Boost.Exception object
                             exception_detail::clone_base const & base =
-                                boost::enable_current_exception(std_exception_ptr_wrapper{std::current_exception()});
+                                boost::enable_current_exception(std_exception_ptr_wrapper(std::current_exception()));
                             return exception_ptr(shared_ptr<exception_detail::clone_base const>(base.clone()));
                             }
                         catch(
