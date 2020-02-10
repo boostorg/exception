@@ -304,12 +304,10 @@ boost
         std_exception_ptr_wrapper
             {
             std::exception_ptr p;
-
             explicit std_exception_ptr_wrapper( std::exception_ptr const & ptr ) BOOST_NOEXCEPT:
                 p(ptr)
                 {
                 }
-
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
             explicit std_exception_ptr_wrapper( std::exception_ptr && ptr ) BOOST_NOEXCEPT:
                 p(static_cast<std::exception_ptr &&>(ptr))
