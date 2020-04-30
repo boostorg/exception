@@ -8,7 +8,7 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/workaround.hpp>
 
-#if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x610))
+#if BOOST_WORKAROUND(BOOST_CODEGEARC, BOOST_TESTED_AT(0x610))
 struct test_tag1 {};
 struct test_tag2 {};
 #endif
