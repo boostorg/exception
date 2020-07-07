@@ -92,6 +92,14 @@ boost
             }
         }
 
+    template <class T>
+    inline
+    exception_ptr
+    make_exception_ptr( T const & e )
+        {
+        return copy_exception(e);
+        }
+
 #ifndef BOOST_NO_RTTI
     typedef error_info<struct tag_original_exception_type,std::type_info const *> original_exception_type;
 
