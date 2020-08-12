@@ -76,20 +76,13 @@ boost
             }
         };
 
-    template <class T>
+    template <class E>
     inline
     exception_ptr
-    copy_exception( T const & e )
+    copy_exception( E const & e )
         {
-        try
-            {
-            throw enable_current_exception(e);
-            }
-        catch(
-        ... )
-            {
-            return current_exception();
-            }
+        wrapexcept<E> * w = new wrapexcept<E>(e);
+        return exception_ptr(shared_ptr<wrapexcept<E> >(w));
         }
 
     template <class T>
