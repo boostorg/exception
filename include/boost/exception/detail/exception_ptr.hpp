@@ -20,6 +20,7 @@
 #include <boost/core/demangle.hpp>
 #endif
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <stdexcept>
 #include <new>
 #include <ios>
@@ -81,8 +82,9 @@ boost
     exception_ptr
     copy_exception( E const & e )
         {
-        wrapexcept<E> * w = new wrapexcept<E>(e);
-        return exception_ptr(shared_ptr<wrapexcept<E> >(w));
+        E cp = e;
+        exception_detail::copy_boost_exception(&cp, &e);
+        return exception_ptr(boost::make_shared<wrapexcept<E> >(cp));
         }
 
     template <class T>
