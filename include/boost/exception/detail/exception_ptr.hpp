@@ -92,7 +92,7 @@ boost
     exception_ptr
     make_exception_ptr( T const & e )
         {
-        return copy_exception(e);
+        return boost::copy_exception(e);
         }
 
 #ifndef BOOST_NO_RTTI
