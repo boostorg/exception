@@ -3,8 +3,12 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#define BOOST_NO_EXCEPTIONS
 #include <boost/config.hpp>
+
+#if !defined( BOOST_NO_EXCEPTIONS )
+#   error This program requires exception handling disabled.
+#endif
+
 #include <boost/throw_exception.hpp>
 #include <boost/exception/info.hpp>
 #include <boost/exception/diagnostic_information.hpp>
