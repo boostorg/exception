@@ -4,7 +4,7 @@
 
 ## Documentation
 
-Please follow this [link](https://htmlpreview.github.io/?https://github.com/boostorg/exception/blob/master/doc/boost-exception.html).
+https://boostorg.github.io/exception
 
 ## Support
 
