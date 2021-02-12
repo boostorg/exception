@@ -138,7 +138,7 @@ jobs:
       - name: Run tests
         run: |
           cd ../boost-root
-          ./b2 -j3 libs/exception/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release exception-handling=on,off rtti=on,off
+          ./b2 -j3 libs/exception/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release exception-handling=on,off rtti=on,off link=static,shared visibility=hidden,global
 
   windows:
     strategy:
