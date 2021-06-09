@@ -1,12 +1,9 @@
 # Copyright 2019 Mike Dev
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
-#
-# NOTE: CMake support for Boost.Exception is currently experimental at best
-#       and the interface is likely to change in the future
 
-cmake_minimum_required( VERSION 3.5 )
-project( BoostException LANGUAGES CXX )
+cmake_minimum_required( VERSION 3.5...3.20 )
+project( boost_exception VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX )
 
 # We treat Boost.Exception as header only for now.
 # See https://github.com/boostorg/exception/pull/17
@@ -27,4 +24,3 @@ target_link_libraries( boost_exception
         Boost::tuple
         Boost::type_traits
 )
-
