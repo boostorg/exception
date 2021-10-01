@@ -45,7 +45,8 @@ boost
         {
 #ifndef BOOST_NO_CXX11_HDR_EXCEPTION
         struct
-        std_exception_ptr_wrapper
+        std_exception_ptr_wrapper:
+            std::exception
             {
             std::exception_ptr p;
             explicit std_exception_ptr_wrapper( std::exception_ptr const & ptr ) BOOST_NOEXCEPT:
@@ -60,6 +61,7 @@ boost
 #endif
             };
         shared_ptr<exception_detail::clone_base const>
+        inline
         wrap_exception_ptr( std::exception_ptr const & e )
             {
             exception_detail::clone_base const & base =
