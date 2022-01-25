@@ -385,6 +385,9 @@ boost
                         {
                         return exception_ptr(shared_ptr<exception_detail::clone_base const>(e.clone()));
                         }
+
+#ifdef BOOST_NO_CXX11_HDR_EXCEPTION
+
                     catch(
                     std::domain_error & e )
                         {
@@ -457,19 +460,19 @@ boost
                         {
                         return exception_detail::current_exception_std_exception(e);
                         }
-#ifdef BOOST_NO_CXX11_HDR_EXCEPTION
-                    // this case can be handled losslesly with std::current_exception() (see below)
                     catch(
                     std::exception & e )
                         {
                         return exception_detail::current_exception_unknown_std_exception(e);
                         }
-#endif
                     catch(
                     boost::exception & e )
                         {
                         return exception_detail::current_exception_unknown_boost_exception(e);
                         }
+
+#endif // #ifdef BOOST_NO_CXX11_HDR_EXCEPTION
+
                     catch(
                     ... )
                         {
