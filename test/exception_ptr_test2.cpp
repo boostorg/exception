@@ -4,7 +4,14 @@
 
 #include <boost/config.hpp>
 
-#if defined(BOOST_NO_CXX11_HDR_EXCEPTION)
+#if defined(BOOST_NO_EXCEPTIONS)
+
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE( "Skipping test because BOOST_NO_EXCEPTIONS is defined" )
+
+int main() {}
+
+#elif defined(BOOST_NO_CXX11_HDR_EXCEPTION)
 
 #include <boost/config/pragma_message.hpp>
 BOOST_PRAGMA_MESSAGE( "Skipping test because BOOST_NO_CXX11_HDR_EXCEPTION is defined" )
