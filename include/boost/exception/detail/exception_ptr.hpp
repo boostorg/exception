@@ -112,14 +112,24 @@ boost
             }
         };
 
+    namespace
+    exception_detail
+        {
+        template <class E>
+        inline
+        exception_ptr
+        copy_exception_impl( E const & e )
+            {
+            return exception_ptr(boost::make_shared<E>(e));
+            }
+        }
+
     template <class E>
     inline
     exception_ptr
     copy_exception( E const & e )
         {
-        E cp = e;
-        exception_detail::copy_boost_exception(&cp, &e);
-        return exception_ptr(boost::make_shared<wrapexcept<E> >(cp));
+        return exception_detail::copy_exception_impl(boost::enable_current_exception(e));
         }
 
     template <class T>
