@@ -64,8 +64,7 @@ boost
         inline
         wrap_exception_ptr( std::exception_ptr const & e )
             {
-            exception_detail::clone_base const & base =
-                boost::enable_current_exception(std_exception_ptr_wrapper(std::current_exception()));
+            exception_detail::clone_base const & base = boost::enable_current_exception(std_exception_ptr_wrapper(e));
             return shared_ptr<exception_detail::clone_base const>(base.clone());
             }
 #endif
