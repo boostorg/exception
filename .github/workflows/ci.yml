@@ -138,7 +138,8 @@ jobs:
             cxxstd: "03,11,14,17,20,2b"
             os: macos-12
 
-    runs-on: ${{matrix.os}}    container: ${{matrix.container}}
+    runs-on: ${{matrix.os}}
+    container: ${{matrix.container}}
 
     defaults:
       run:
@@ -173,9 +174,9 @@ jobs:
           cd ..
           git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
           cd boost-root
-          cp -r $GITHUB_WORKSPACE/* libs/exception
+          cp -r $GITHUB_WORKSPACE/* libs/$LIBRARY
           git submodule update --init tools/boostdep
-          python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" exception
+          python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" $LIBRARY
           ./bootstrap.sh
           ./b2 -d0 headers
 
@@ -187,7 +188,7 @@ jobs:
       - name: Run tests
         run: |
           cd ../boost-root
-          ./b2 -j3 libs/exception/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} variant=debug,release exception-handling=on,off rtti=on,off link=static,shared visibility=hidden,global
+          ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} ${ADDRMD:+address-model=$ADDRMD} variant=debug,release exception-handling=on,off rtti=on,off link=static,shared visibility=hidden,global
 
   windows:
     strategy:
@@ -236,9 +237,9 @@ jobs:
           cd ..
           git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root
           cd boost-root
-          xcopy /s /e /q %GITHUB_WORKSPACE% libs\exception\
+          xcopy /s /e /q %GITHUB_WORKSPACE% libs\%LIBRARY%\
           git submodule update --init tools/boostdep
-          python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" exception
+          python tools/boostdep/depinst/depinst.py --git_args "--jobs 3" %LIBRARY%
           cmd /c bootstrap
           b2 -d0 headers
 
@@ -246,4 +247,5 @@ jobs:
         shell: cmd
         run: |
           cd ../boost-root
-          b2 -j3 libs/exception/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release exception-handling=on,off rtti=on,off
+          b2 -j3 libs/%LIBRARY%/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} address-model=${{matrix.addrmd}} variant=debug,release exception-handling=on,off rtti=on,off embed-manifest-via=linker
+
