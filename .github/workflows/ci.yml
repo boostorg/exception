@@ -151,7 +151,7 @@ jobs:
 
       - name: Install packages
         if: matrix.install
-        run:
+        run: |
           sudo apt-get update
           sudo apt-get -y install ${{matrix.install}}
 
