@@ -44,48 +44,27 @@ boost
     exception_detail
         {
 #ifndef BOOST_NO_CXX11_HDR_EXCEPTION
-        class
-        BOOST_SYMBOL_VISIBLE
-        std_exception_ptr_clone_impl:
-            public virtual clone_base
+        struct
+        std_exception_ptr_wrapper:
+            std::exception
             {
-            std::exception_ptr p_;
-
-            public:
-
-            explicit std_exception_ptr_clone_impl( std::exception_ptr const & ptr ) BOOST_NOEXCEPT:
-                p_(ptr)
+            std::exception_ptr p;
+            explicit std_exception_ptr_wrapper( std::exception_ptr const & ptr ) BOOST_NOEXCEPT:
+                p(ptr)
                 {
                 }
-
-            ~std_exception_ptr_clone_impl() BOOST_NOEXCEPT_OR_NOTHROW
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+            explicit std_exception_ptr_wrapper( std::exception_ptr && ptr ) BOOST_NOEXCEPT:
+                p(static_cast<std::exception_ptr &&>(ptr))
                 {
                 }
-
-            private:
-
-            std_exception_ptr_clone_impl( std_exception_ptr_clone_impl const & x ):
-                p_(x.p_)
-                {
-                }
-
-            clone_base const*
-            clone() const
-                {
-                return new std_exception_ptr_clone_impl(*this);
-                }
-
-            void
-            rethrow() const
-                {
-                std::rethrow_exception(p_);
-                }
+#endif
             };
         shared_ptr<exception_detail::clone_base const>
         inline
         wrap_exception_ptr( std::exception_ptr const & e )
             {
-            exception_detail::clone_base const & base = std_exception_ptr_clone_impl(e);
+            exception_detail::clone_base const & base = boost::enable_current_exception(std_exception_ptr_wrapper(e));
             return shared_ptr<exception_detail::clone_base const>(base.clone());
             }
 #endif
@@ -557,7 +536,20 @@ boost
         rethrow_exception_( exception_ptr const & p )
             {
             BOOST_ASSERT(p);
+#if defined( BOOST_NO_CXX11_HDR_EXCEPTION ) || defined( BOOST_NO_EXCEPTIONS )
             p.ptr_->rethrow();
+#else
+            try
+                {
+                p.ptr_->rethrow();
+                }
+            catch(
+            std_exception_ptr_wrapper const & wrp)
+                {
+                // if an std::exception_ptr was wrapped above then rethrow it
+                std::rethrow_exception(wrp.p);
+                }
+#endif
             }
         }
 
