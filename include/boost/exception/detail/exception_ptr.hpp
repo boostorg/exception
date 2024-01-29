@@ -7,7 +7,7 @@
 #ifndef BOOST_EXCEPTION_618474C2DE1511DEB74A388C56D89593
 #define BOOST_EXCEPTION_618474C2DE1511DEB74A388C56D89593
 
-#include <boost/config.hpp>
+#include <boost/exception/detail/requires_cxx11.hpp>
 #include <boost/exception/exception.hpp>
 #include <boost/exception/info.hpp>
 #include <boost/exception/diagnostic_information.hpp>
