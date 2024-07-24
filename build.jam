@@ -5,15 +5,17 @@
 
 require-b2 5.2 ;
 
+constant boost_dependencies :
+    /boost/assert//boost_assert
+    /boost/config//boost_config
+    /boost/core//boost_core
+    /boost/smart_ptr//boost_smart_ptr
+    /boost/throw_exception//boost_throw_exception
+    /boost/tuple//boost_tuple
+    /boost/type_traits//boost_type_traits ;
+
 project /boost/exception
     : common-requirements
-        <library>/boost/assert//boost_assert
-        <library>/boost/config//boost_config
-        <library>/boost/core//boost_core
-        <library>/boost/smart_ptr//boost_smart_ptr
-        <library>/boost/throw_exception//boost_throw_exception
-        <library>/boost/tuple//boost_tuple
-        <library>/boost/type_traits//boost_type_traits
         <include>include
     ;
 
@@ -25,3 +27,4 @@ explicit
 call-if : boost-library exception
     : install boost_exception
     ;
+
