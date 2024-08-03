@@ -7,6 +7,8 @@
 
 import testing ;
 
+project : requirements <library>/boost/exception//boost_exception ;
+
 #to_string
 
 run is_output_streamable_test.cpp ;

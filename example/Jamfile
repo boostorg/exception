@@ -5,6 +5,8 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+project : requirements <library>/boost/exception//boost_exception ;
+
 exe example_io : example_io.cpp ;
 obj error_info_1 : error_info_1.cpp ;
 obj error_info_2 : error_info_2.cpp ;
