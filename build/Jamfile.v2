@@ -12,4 +12,4 @@ project
     : usage-requirements <define>BOOST_EXCEPTION_NO_LIB=1
     ;
 
-lib boost_exception : clone_current_exception_non_intrusive.cpp ;
+lib boost_exception : clone_current_exception_non_intrusive.cpp :  <exception-handling>on ;
