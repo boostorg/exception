@@ -7,7 +7,7 @@
 
 project
     : source-location ../src
-    : common-requirements <library>$(boost_dependencies)
+    : common-requirements <include>../include <library>$(boost_dependencies)
     : requirements <link>static
     : usage-requirements <define>BOOST_EXCEPTION_NO_LIB=1
     ;

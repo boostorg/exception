@@ -15,8 +15,6 @@ constant boost_dependencies :
     /boost/type_traits//boost_type_traits ;
 
 project /boost/exception
-    : common-requirements
-        <include>include
     ;
 
 explicit
@@ -27,4 +25,3 @@ explicit
 call-if : boost-library exception
     : install boost_exception
     ;
-
