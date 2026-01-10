@@ -17,11 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: gcc-4.8
-            cxxstd: "11"
-            os: ubuntu-latest
-            container: ubuntu:18.04
-            install: g++-4.8
           - toolset: gcc-5
             cxxstd: "11,14,1z"
             os: ubuntu-latest
@@ -38,14 +33,17 @@ jobs:
             container: ubuntu:18.04
           - toolset: gcc-8
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: g++-8
           - toolset: gcc-9
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
           - toolset: gcc-10
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: g++-10
           - toolset: gcc-11
             cxxstd: "11,14,17,2a"
@@ -90,35 +88,45 @@ jobs:
           - toolset: clang
             compiler: clang++-6.0
             cxxstd: "11,14,17"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: clang-6.0
           - toolset: clang
             compiler: clang++-7
             cxxstd: "11,14,17"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: clang-7
           - toolset: clang
             compiler: clang++-8
             cxxstd: "11,14,17"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: clang-8
           - toolset: clang
             compiler: clang++-9
             cxxstd: "11,14,17"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install: clang-9
           - toolset: clang
             compiler: clang++-10
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
+            install: clang-10
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
+            install: clang-11
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11,14,17,20"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
+            install: clang-12
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11,14,17,20,2b"
@@ -248,14 +256,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - toolset: msvc-14.0
-            cxxstd: "14"
-            addrmd: 32,64
-            os: windows-2019
-          - toolset: msvc-14.2
-            cxxstd: "14,17,20,latest"
-            addrmd: 32,64
-            os: windows-2019
           - toolset: msvc-14.3
             cxxstd: "14,17,20,latest"
             addrmd: 32,64
@@ -267,7 +267,7 @@ jobs:
           - toolset: gcc
             cxxstd: "11,14,17,2a"
             addrmd: 64
-            os: windows-2019
+            os: windows-2022
 
     runs-on: ${{matrix.os}}
 

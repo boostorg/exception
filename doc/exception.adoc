@@ -28,7 +28,7 @@ endif::[]
 [cols="25,>75", grid=none, frame=none]
 |===
 |
-|For {CPP}11 or newer, consider using https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html[Boost LEAF]. It provides similar functionality more efficiently and understands Boost Exception for compatibility; see https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html#boost_exception[this overview]. Boost Exception is _not_ deprecated and continues to support {CPP}03.
+|For {CPP}11 or newer, consider using https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html[Boost LEAF]. It provides similar functionality more efficiently and understands Boost Exception for compatibility; see https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html#boost_exception[this overview].
 |===
 
 == Introduction
