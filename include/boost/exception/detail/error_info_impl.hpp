@@ -13,6 +13,8 @@
 #include <utility>
 #include <string>
 
+namespace boost { namespace exception_detail { class writer; } }
+
 #ifndef BOOST_EXCEPTION_ENABLE_WARNINGS
 #if defined(__GNUC__) && __GNUC__*100+__GNUC_MINOR__>301
 #pragma GCC system_header
@@ -38,6 +40,7 @@ boost
 
             virtual std::string name_value_string() const = 0;
             virtual error_info_base * clone() const = 0;
+            virtual void write_to(writer &) const = 0;
 
             virtual
             ~error_info_base() BOOST_NOEXCEPT_OR_NOTHROW
@@ -97,6 +100,7 @@ boost
         error_info & operator=( error_info && x );
 #endif
         std::string name_value_string() const;
+        void write_to(exception_detail::writer &) const;
         value_type v_;
         };
     }
