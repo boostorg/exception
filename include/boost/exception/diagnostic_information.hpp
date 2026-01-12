@@ -205,6 +205,65 @@ boost
 #endif
         return w;
         }
+
+    namespace
+    exception_detail
+        {
+        template <class Writer>
+        void
+        write_diagnostic_information_to_impl_( boost::exception const * be, std::exception const * se, Writer & w )
+            {
+            if( !be && !se )
+                return;
+#ifndef BOOST_NO_RTTI
+            if( !be )
+                be=dynamic_cast<boost::exception const *>(se);
+            if( !se )
+                se=dynamic_cast<std::exception const *>(be);
+#endif
+            if( be )
+                {
+                if( char const * const * f=get_error_info<throw_file>(*be) )
+                    write_nested(w, *f, "throw_file");
+                if( int const * l=get_error_info<throw_line>(*be) )
+                    write_nested(w, *l, "throw_line");
+                if( char const * const * fn=get_error_info<throw_function>(*be) )
+                    write_nested(w, *fn, "throw_function");
+                }
+#ifndef BOOST_NO_RTTI
+            if( be || se )
+                write_nested(w, core::demangle((be?(BOOST_EXCEPTION_DYNAMIC_TYPEID(*be)):(BOOST_EXCEPTION_DYNAMIC_TYPEID(*se))).type_->name()).c_str(), "dynamic_exception_type");
+#endif
+            if( se )
+                if( char const * wh = se->what() )
+                    write_nested(w, wh, "std::exception::what");
+            if( be )
+                if( error_info_container * c = be->data_.get() )
+                    {
+                    writer_adaptor<Writer> wa(w);
+                    c->write_to(wa);
+                    }
+            }
+        }
+
+    template <class T, class Writer>
+    void
+    write_diagnostic_information_to( T const & e, Writer & w )
+        {
+        exception_detail::write_diagnostic_information_to_impl_(exception_detail::get_boost_exception(&e),exception_detail::get_std_exception(&e),w);
+        }
+
+#ifndef BOOST_NO_EXCEPTIONS
+    template <class Writer>
+    void
+    write_current_exception_diagnostic_information_to( Writer & w )
+        {
+        boost::exception const * be=current_exception_cast<boost::exception const>();
+        std::exception const * se=current_exception_cast<std::exception const>();
+        if( be || se )
+            exception_detail::write_diagnostic_information_to_impl_(be,se,w);
+        }
+#endif
     }
 
 #if defined(_MSC_VER) && !defined(BOOST_EXCEPTION_ENABLE_WARNINGS)
