@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.26">
+<meta name="author" content="C&#43;&#43; Exception Augmentation Library | Emil Dotchevski">
+<title>Boost Exception</title>
+<link rel="stylesheet" href="./zajo-dark.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="./rouge-github.css">
+<meta name="keywords" content="c++,error handling,open source">
+<meta name="description" content="Lightweight Error Augmentation Framework">
+<link rel="stylesheet" href="./zajo-light.css" disabled=true>
+<script>
+function switch_style()
+{
+    var i, tag;
+    for( i=0, tag=document.getElementsByTagName("link"); i<tag.length; i++ )
+        if( tag[i].rel.indexOf("stylesheet")!=-1 && tag[i].href.includes("zajo-") )
+            tag[i].disabled = !tag[i].disabled;
+}
+</script>
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Boost Exception<div style="z-index: 3; bottom:-16px; right:4px; position:fixed"><input width="32" height="32" type="image" alt="Skin" src="./skin.png" onclick="this.blur();switch_style();return false;"/></div></h1>
+<div class="details">
+<span id="author" class="author">C&#43;&#43; Exception Augmentation Library | Emil Dotchevski</span><br>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle"></div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">Introduction</a></li>
+<li><a href="#tutorial">Tutorial</a>
+<ul class="sectlevel2">
+<li><a href="#tutorial_transporting_data">Transporting of Arbitrary Data to the Catch Site</a>
+<ul class="sectlevel3">
+<li><a href="#_adding_of_arbitrary_data_at_the_point_of_the_throw">Adding of Arbitrary Data at the Point of the Throw</a></li>
+<li><a href="#_adding_of_arbitrary_data_to_active_exception_objects">Adding of Arbitrary Data to Active Exception Objects</a></li>
+<li><a href="#_adding_grouped_data_to_exceptions">Adding Grouped Data to Exceptions</a></li>
+</ul>
+</li>
+<li><a href="#tutorial_enable_error_info">Integrating Boost Exception in Existing Exception Class Hierarchies</a></li>
+<li><a href="#tutorial_exception_ptr">Transporting of Exceptions Between Threads</a>
+<ul class="sectlevel3">
+<li><a href="#_using_enable_current_exception_at_the_time_of_the_throw">Using enable_current_exception at the Time of the Throw</a></li>
+<li><a href="#_cloning_and_re_throwing_an_exception">Cloning and Re-Throwing an Exception</a></li>
+</ul>
+</li>
+<li><a href="#exception_types_as_simple_semantic_tags">Exception Types as Simple Semantic Tags</a></li>
+<li><a href="#using_virtual_inheritance_in_exception_types">Using Virtual Inheritance in Exception Types</a></li>
+<li><a href="#tutorial_diagnostic_information">Diagnostic Information</a></li>
+</ul>
+</li>
+<li><a href="#synopsis">Synopsis</a>
+<ul class="sectlevel2">
+<li><a href="#synopsis-exception"><code>exception.hpp</code></a></li>
+<li><a href="#synopsis-error_info"><code>error_info.hpp</code></a></li>
+<li><a href="#synopsis-info"><code>info.hpp</code></a></li>
+<li><a href="#synopsis-info_tuple"><code>info_tuple.hpp</code></a></li>
+<li><a href="#synopsis-enable_error_info"><code>enable_error_info.hpp</code></a></li>
+<li><a href="#synopsis-diagnostic_information"><code>diagnostic_information.hpp</code></a></li>
+<li><a href="#synopsis-current_exception_cast"><code>current_exception_cast.hpp</code></a></li>
+<li><a href="#synopsis-exception_ptr"><code>exception_ptr.hpp</code></a></li>
+<li><a href="#synopsis-enable_current_exception"><code>enable_current_exception.hpp</code></a></li>
+<li><a href="#synopsis-throw_exception"><code>throw_exception.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_api_function"><code>errinfo_api_function.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_at_line"><code>errinfo_at_line.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_errno"><code>errinfo_errno.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_file_handle"><code>errinfo_file_handle.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_file_name"><code>errinfo_file_name.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_file_open_mode"><code>errinfo_file_open_mode.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_nested_exception"><code>errinfo_nested_exception.hpp</code></a></li>
+<li><a href="#synopsis-errinfo_type_info_name"><code>errinfo_type_info_name.hpp</code></a></li>
+<li><a href="#synopsis-all"><code>all.hpp</code></a></li>
+</ul>
+</li>
+<li><a href="#reference">Reference</a>
+<ul class="sectlevel2">
+<li><a href="#types">Types</a>
+<ul class="sectlevel3">
+<li><a href="#exception"><code>exception</code></a></li>
+<li><a href="#error_info"><code>error_info</code></a></li>
+<li><a href="#errinfo_api_function"><code>errinfo_api_function</code></a></li>
+<li><a href="#errinfo_at_line"><code>errinfo_at_line</code></a></li>
+<li><a href="#errinfo_errno"><code>errinfo_errno</code></a></li>
+<li><a href="#errinfo_file_handle"><code>errinfo_file_handle</code></a></li>
+<li><a href="#errinfo_file_name"><code>errinfo_file_name</code></a></li>
+<li><a href="#errinfo_file_open_mode"><code>errinfo_file_open_mode</code></a></li>
+<li><a href="#errinfo_nested_exception"><code>errinfo_nested_exception</code></a></li>
+<li><a href="#errinfo_type_info_name"><code>errinfo_type_info_name</code></a></li>
+<li><a href="#exception_ptr"><code>exception_ptr</code></a></li>
+<li><a href="#original_exception_type"><code>original_exception_type</code></a></li>
+<li><a href="#unknown_exception"><code>unknown_exception</code></a></li>
+</ul>
+</li>
+<li><a href="#functions">Functions</a>
+<ul class="sectlevel3">
+<li><a href="#copy_exception"><code>copy_exception</code></a></li>
+<li><a href="#current_exception"><code>current_exception</code></a></li>
+<li><a href="#current_exception_cast"><code>current_exception_cast</code></a></li>
+<li><a href="#current_exception_diagnostic_information"><code>current_exception_diagnostic_information</code></a></li>
+<li><a href="#diagnostic_information"><code>diagnostic_information</code></a></li>
+<li><a href="#diagnostic_information_what"><code>diagnostic_information_what</code></a></li>
+<li><a href="#enable_current_exception"><code>enable_current_exception</code></a></li>
+<li><a href="#enable_error_info"><code>enable_error_info</code></a></li>
+<li><a href="#get_error_info"><code>get_error_info</code></a></li>
+<li><a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></li>
+<li><a href="#rethrow_exception"><code>rethrow_exception</code></a></li>
+<li><a href="#throw_exception"><code>throw_exception</code></a></li>
+<li><a href="#tuple_operator_shl"><code>tuple/operator&lt;&lt;</code></a></li>
+</ul>
+</li>
+<li><a href="#macros">Macros</a>
+<ul class="sectlevel3">
+<li><a href="#BOOST_THROW_EXCEPTION"><code>BOOST_THROW_EXCEPTION</code></a></li>
+</ul>
+</li>
+<li><a href="#configuration_macros">Configuration Macros</a></li>
+</ul>
+</li>
+<li><a href="#motivation">Design Rationale</a>
+<ul class="sectlevel2">
+<li><a href="#_exception_wrapping">Exception wrapping</a></li>
+<li><a href="#_the_boostexception_solution">The boost::exception solution</a></li>
+</ul>
+</li>
+<li><a href="#frequently_asked_questions">Frequently Asked Questions</a>
+<ul class="sectlevel2">
+<li><a href="#_what_is_the_cost_of_calling_boostthrow_exception">What is the cost of calling boost::throw_exception?</a></li>
+<li><a href="#_what_is_the_cost_of_boost_throw_exception">What is the cost of BOOST_THROW_EXCEPTION?</a></li>
+<li><a href="#_should_i_use_boostthrow_exception_or_boost_throw_exception_or_just_throw">Should I use boost::throw_exception or BOOST_THROW_EXCEPTION or just throw?</a></li>
+<li><a href="#_why_doesnt_boostexception_derive_from_stdexception">Why doesn&#8217;t boost::exception derive from std::exception?</a></li>
+<li><a href="#_why_is_boostexception_abstract">Why is boost::exception abstract?</a></li>
+<li><a href="#_why_use_operator_overload_for_adding_info_to_exceptions">Why use operator&lt;&lt; overload for adding info to exceptions?</a></li>
+<li><a href="#_why_is_operator_allowed_to_throw">Why is operator&lt;&lt; allowed to throw?</a></li>
+</ul>
+</li>
+<li><a href="#_acknowledgements">Acknowledgements</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<table id="boost-exception" class="tableblock frame-none grid-none stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-right valign-top"><p class="tableblock">For C&#43;&#43;11 or newer, consider using <a href="https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html">Boost LEAF</a>. It provides similar functionality more efficiently and understands Boost Exception for compatibility; see <a href="https://www.boost.org/doc/libs/release/libs/leaf/doc/html/index.html#boost_exception">this overview</a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The purpose of Boost Exception is to ease the design of exception class hierarchies and to help write exception handling and error reporting code.</p>
+</div>
+<div class="paragraph">
+<p>It supports transporting of arbitrary data to the catch site, which is otherwise tricky due to the no-throw requirements (15.5.1) for exception types. Data can be added to any exception object, either directly in the throw-expression (15.1), or at a later time as the exception object propagates up the call stack.</p>
+</div>
+<div class="paragraph">
+<p>The ability to add data to exception objects after they have been passed to throw is important, because often some of the information needed to handle an exception is unavailable in the context where the failure is detected.</p>
+</div>
+<div class="paragraph">
+<p>Boost Exception also supports <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2179.html">N2179</a>-style <a href="#tutorial_exception_ptr">copying</a> of exception objects, implemented non-intrusively and automatically by the <code>boost::<a href="#throw_exception">throw_exception</a></code> function.</p>
+</div>
+<table class="tableblock frame-none grid-none stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#tutorial">Tutorial</a> | <a href="#synopsis">Synopsis</a> | <a href="#reference">Reference</a></p></td>
+<td class="tableblock halign-right valign-top"><p class="tableblock"><a href="#types">Types</a> | <a href="#functions">Functions</a> | <a href="#macros">Macros</a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tutorial">Tutorial</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="tutorial_transporting_data">Transporting of Arbitrary Data to the Catch Site</h3>
+<div class="paragraph">
+<p>All exception types that derive from <code>boost::<a href="#exception">exception</a></code> can be used as type-safe containers of arbitrary data objects, while complying with the no-throw requirements (15.5.1) of the ANSI C&#43;&#43; standard for exception types.</p>
+</div>
+<div class="paragraph">
+<p>When exceptions derive from <code>boost::<a href="#exception">exception</a></code>, arbitrary data can be added to exception objects:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>At the point of the throw;</p>
+</li>
+<li>
+<p>At a later time as exceptions bubble up the call stack.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_adding_of_arbitrary_data_at_the_point_of_the_throw">Adding of Arbitrary Data at the Point of the Throw</h4>
+<div class="paragraph">
+<p>The following example demonstrates how errno can be stored in exception objects using Boost Exception:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/all.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_my_info</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">my_info</span><span class="p">;</span> <span class="c1">//(1)</span>
+
+<span class="k">struct</span> <span class="nc">my_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span> <span class="c1">//(2)</span>
+
+<span class="kt">void</span>
+<span class="nf">f</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="k">throw</span> <span class="n">my_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">my_info</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span> <span class="c1">//(3)</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#error_info"><code>error_info</code></a> | <a href="#exception"><code>exception</code></a> | <a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></p>
+</div>
+<div class="paragraph">
+<p>First, we instantiate the <code><a href="#error_info">error_info</a></code> template using a unique identifier&#8201;&#8212;&#8201;tag_my_info, and the type of the info it identifies&#8201;&#8212;&#8201;int. This provides compile-time type safety for the various values stored in exception objects.</p>
+</div>
+<div class="paragraph">
+<p>Second, we define class my_error, which derives from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>Finally, (3) illustrates how the typedef from (1) can be used with <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> to store values in exception objects at the point of the throw.</p>
+</div>
+<div class="paragraph">
+<p>The stored my_info value can be recovered at a later time like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="c1">// ...continued</span>
+
+<span class="kt">void</span>
+<span class="nf">g</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="n">f</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="n">my_error</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="kt">int</span> <span class="k">const</span> <span class="o">*</span> <span class="n">mi</span><span class="o">=</span><span class="n">boost</span><span class="o">::</span><span class="n">get_error_info</span><span class="o">&lt;</span><span class="n">my_info</span><span class="o">&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">)</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"My info: "</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">mi</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#get_error_info"><code>get_error_info</code></a></p>
+</div>
+<div class="paragraph">
+<p>The <code><a href="#get_error_info">get_error_info</a></code> function template is instantiated with the typedef from (1), and is passed an exception object of a polymorphic type. If the exception object contains the requested value, err will point to it; otherwise a null pointer is returned.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_of_arbitrary_data_to_active_exception_objects">Adding of Arbitrary Data to Active Exception Objects</h4>
+<div class="paragraph">
+<p>Sometimes the throw site does not have all the information that is needed at the catch site to make sense of what went wrong. Let&#8217;s say we have an exception type file_read_error, which takes a file name in its constructor. Consider the following function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="kt">void</span>
+<span class="nf">file_read</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">size</span><span class="o">!=</span><span class="n">fread</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">file_read_error</span><span class="p">(</span><span class="o">????</span><span class="p">);</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>How can the file_read function pass a file name to the exception type constructor? All it has is a FILE handle.</p>
+</div>
+<div class="paragraph">
+<p>Using <code>boost::<a href="#exception">exception</a></code> allows us to free the file_read function from the burden of storing the file name in exceptions it throws:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/all.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/shared_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">file_read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="kt">void</span>
+<span class="nf">file_read</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">size</span><span class="o">!=</span><span class="n">fread</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">file_read_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_errno</span><span class="p">(</span><span class="n">errno</span><span class="p">);</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#exception"><code>exception</code></a> | <a href="#errinfo_errno"><code>errinfo_errno</code></a></p>
+</div>
+<div class="paragraph">
+<p>If file_read detects a failure, it throws an exception which contains the information that is available at the time, namely the errno. Other relevant information, such as the file name, can be added in a context higher up the call stack, where it is known naturally:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/all.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/shared_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="n">file_open</span><span class="p">(</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">file_name</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">mode</span> <span class="p">);</span>
+<span class="kt">void</span> <span class="nf">file_read</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span> <span class="p">);</span>
+
+<span class="kt">void</span>
+<span class="nf">parse_file</span><span class="p">(</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">file_name</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">file_open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="s">"rb"</span><span class="p">);</span>
+    <span class="n">assert</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="kt">char</span> <span class="n">buf</span><span class="p">[</span><span class="mi">1024</span><span class="p">];</span>
+        <span class="n">file_read</span><span class="p">(</span> <span class="n">f</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">buf</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="p">);</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="n">e</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_file_name</span><span class="p">(</span><span class="n">file_name</span><span class="p">);</span>
+        <span class="k">throw</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#exception"><code>exception</code></a> | <a href="#errinfo_file_name"><code>errinfo_file_name</code></a></p>
+</div>
+<div class="paragraph">
+<p>The above function is (almost) exception-neutral&#8201;&#8212;&#8201;if an exception is emitted by any function call within the try block, parse_file does not need to do any real work, but it intercepts any <code>boost::<a href="#exception">exception</a></code> object, stores the file name, and re-throws using a throw-expression with no operand (15.1.6). The rationale for catching any <code>boost::<a href="#exception">exception</a></code> object is that the file name is relevant to any failure that occurs in parse_file, <em>even if the failure is unrelated to file I/O</em>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_grouped_data_to_exceptions">Adding Grouped Data to Exceptions</h4>
+<div class="paragraph">
+<p>The code snippet below demonstrates how <code>boost::http://www.boost.org/libs/tuple/doc/tuple_users_guide.html[tuple]</code> can be used to bundle the name of the function that failed, together with the reported errno so that they can be added to exception objects more conveniently together:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/info_tuple.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_name.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_api_function.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_errno.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/shared_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="n">boost</span><span class="o">::</span><span class="n">errinfo_api_function</span><span class="p">,</span><span class="n">boost</span><span class="o">::</span><span class="n">errinfo_errno</span><span class="o">&gt;</span> <span class="n">clib_failure</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nc">file_open_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span>
+<span class="n">file_open</span><span class="p">(</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">mode</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="o">=</span><span class="n">fopen</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">mode</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">fclose</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="k">throw</span> <span class="n">file_open_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_file_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">clib_failure</span><span class="p">(</span><span class="s">"fopen"</span><span class="p">,</span><span class="n">errno</span><span class="p">);</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#tuple_operator_shl"><code>tuple/operator&lt;&lt;</code></a> | <a href="#errinfo_file_name"><code>errinfo_file_name</code></a> | <a href="#errinfo_api_function"><code>errinfo_api_function</code></a> | <a href="#errinfo_errno"><code>errinfo_errno</code></a></p>
+</div>
+<div class="paragraph">
+<p>Note that the members of a <code>boost::http://www.boost.org/libs/tuple/doc/tuple_users_guide.html[tuple]</code> are stored separately in exception objects; they can only be retrieved individually, using <code><a href="#get_error_info">get_error_info</a></code>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="tutorial_enable_error_info">Integrating Boost Exception in Existing Exception Class Hierarchies</h3>
+<div class="paragraph">
+<p>Some exception hierarchies can not be modified to make <code>boost::<a href="#exception">exception</a></code> a base type. In this case, the <code><a href="#enable_error_info">enable_error_info</a></code> function template can be used to make exception objects derive from <code>boost::<a href="#exception">exception</a></code> anyway. Here is an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/all.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdexcept&gt;</span><span class="cp">
+</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_std_range_min</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">std_range_min</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_std_range_max</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">std_range_max</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_std_range_index</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">std_range_index</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="k">class</span>
+<span class="nc">my_container</span>
+    <span class="p">{</span>
+    <span class="nl">public:</span>
+
+    <span class="kt">size_t</span> <span class="n">size</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+
+    <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span>
+    <span class="k">operator</span><span class="p">[](</span> <span class="kt">size_t</span> <span class="n">i</span> <span class="p">)</span> <span class="k">const</span>
+        <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">()</span> <span class="p">)</span>
+            <span class="k">throw</span> <span class="n">boost</span><span class="o">::</span><span class="n">enable_error_info</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">range_error</span><span class="p">(</span><span class="s">"Index out of range"</span><span class="p">))</span> <span class="o">&lt;&lt;</span>
+                <span class="n">std_range_min</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+                <span class="n">std_range_max</span><span class="p">(</span><span class="n">size</span><span class="p">())</span> <span class="o">&lt;&lt;</span>
+                <span class="n">std_range_index</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="c1">//....</span>
+        <span class="p">}</span>
+    <span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#enable_error_info"><code>enable_error_info</code></a> | <a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></p>
+</div>
+<div class="paragraph">
+<p>The call to <code><a href="#enable_error_info">enable_error_info</a></code>&lt;T&gt; gets us an object of <em>unspecified type</em> which is guaranteed to derive from both <code>boost::<a href="#exception">exception</a></code> and T. This makes it possible to use <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> to store additional information in the exception object. The exception can be intercepted as T &amp;, so existing exception handling will not break. It can also be intercepted as <code>boost::<a href="#exception">exception</a></code> &amp;, so that <a href="#tutorial_transporting_data">more information can be added to the exception at a later time</a>.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="tutorial_exception_ptr">Transporting of Exceptions Between Threads</h3>
+<div class="paragraph">
+<p>Boost Exception supports transporting of exception objects between threads through cloning. This system is similar to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2179.html">N2179</a>, but because Boost Exception can not rely on language support, the use of <code><a href="#enable_current_exception">enable_current_exception</a></code> at the time of the throw is required in order to use cloning.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+All exceptions emitted by the familiar function <code>boost::<a href="#throw_exception">throw_exception</a></code> are guaranteed to derive from <code>boost::<a href="#exception">exception</a></code> and to support cloning.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_using_enable_current_exception_at_the_time_of_the_throw">Using enable_current_exception at the Time of the Throw</h4>
+<div class="paragraph">
+<p>Here is how cloning can be enabled in a throw-expression (15.1):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_errno.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">file_read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="kt">void</span>
+<span class="nf">file_read</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">size</span><span class="o">!=</span><span class="n">fread</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">boost</span><span class="o">::</span><span class="n">enable_current_exception</span><span class="p">(</span><span class="n">file_read_error</span><span class="p">())</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_errno</span><span class="p">(</span><span class="n">errno</span><span class="p">);</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#enable_current_exception"><code>enable_current_exception</code></a> | <a href="#errinfo_errno"><code>errinfo_errno</code></a></p>
+</div>
+<div class="paragraph">
+<p>Of course, <code><a href="#enable_current_exception">enable_current_exception</a></code> may be used with any exception type; there is no requirement that it should derive from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_cloning_and_re_throwing_an_exception">Cloning and Re-Throwing an Exception</h4>
+<div class="paragraph">
+<p>When you catch an exception, you can call <code><a href="#current_exception">current_exception</a></code> to get an <code><a href="#exception_ptr">exception_ptr</a></code> object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/thread.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/bind.hpp&gt;</span><span class="cp">
+</span>
+<span class="kt">void</span> <span class="nf">do_work</span><span class="p">();</span> <span class="c1">//throws cloning-enabled boost::exceptions</span>
+
+<span class="kt">void</span>
+<span class="nf">worker_thread</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception_ptr</span> <span class="o">&amp;</span> <span class="n">error</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="n">do_work</span><span class="p">();</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception_ptr</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="p">...</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">current_exception</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#current_exception"><code>current_exception</code></a> | <a href="#exception_ptr"><code>exception_ptr</code></a></p>
+</div>
+<div class="paragraph">
+<p>In the above example, note that <code><a href="#current_exception">current_exception</a></code> captures the original type of the exception object. The exception can be thrown again using the <code><a href="#rethrow_exception">rethrow_exception</a></code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="c1">// ...continued</span>
+
+<span class="kt">void</span>
+<span class="nf">work</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">exception_ptr</span> <span class="n">error</span><span class="p">;</span>
+    <span class="n">boost</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="n">worker_thread</span><span class="p">,</span><span class="n">boost</span><span class="o">::</span><span class="n">ref</span><span class="p">(</span><span class="n">error</span><span class="p">))</span> <span class="p">);</span>
+    <span class="n">t</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">error</span> <span class="p">)</span>
+        <span class="n">boost</span><span class="o">::</span><span class="n">rethrow_exception</span><span class="p">(</span><span class="n">error</span><span class="p">);</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#rethrow_exception"><code>rethrow_exception</code></a> | <a href="#exception_ptr"><code>exception_ptr</code></a></p>
+</div>
+<div class="paragraph">
+<p>Note that <code><a href="#current_exception">current_exception</a></code> could fail to copy the original exception object in the following cases:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>if there is not enough memory, in which case the returned <code><a href="#exception_ptr">exception_ptr</a></code> points to an instance of std::bad_alloc, or</p>
+</li>
+<li>
+<p>if <code><a href="#enable_current_exception">enable_current_exception</a></code> was not used in the throw-expression passed to the original throw statement and the current implementation does not have the necessary compiler-specific support to copy the exception automatically, in which case the returned <code><a href="#exception_ptr">exception_ptr</a></code> points to an instance of <code><a href="#unknown_exception">unknown_exception</a></code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Regardless, the use of <code><a href="#current_exception">current_exception</a></code> and <code><a href="#rethrow_exception">rethrow_exception</a></code> in the above examples is well-formed.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="exception_types_as_simple_semantic_tags">Exception Types as Simple Semantic Tags</h3>
+<div class="paragraph">
+<p>Deriving from <code>boost::<a href="#exception">exception</a></code> effectively decouples the semantics of a failure from the information that is relevant to each individual instance of reporting a failure with a given semantic.</p>
+</div>
+<div class="paragraph">
+<p>In other words: with <code>boost::<a href="#exception">exception</a></code>, what data a given exception object transports depends primarily on the context in which failures are reported (not on its type.) Since exception types need no members, it becomes very natural to throw exceptions that derive from more than one type to indicate multiple appropriate semantics:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">struct</span> <span class="nc">exception_base</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">io_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">exception_base</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">io_error</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">io_error</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">file_error</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">read_error</span> <span class="p">{</span> <span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#exception"><code>exception</code></a></p>
+</div>
+<div class="paragraph">
+<p>Using this approach, exception types become a simple tagging system for categorizing errors and selecting failures in exception handlers.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="using_virtual_inheritance_in_exception_types">Using Virtual Inheritance in Exception Types</h3>
+<div class="paragraph">
+<p>Exception types should use virtual inheritance when deriving from other exception types. This insight is due to Andrew Koenig. Using virtual inheritance prevents ambiguity problems in the exception handler:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span><span class="k">struct</span> <span class="nc">my_exc1</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="kt">char</span> <span class="k">const</span><span class="o">*</span> <span class="n">what</span><span class="p">()</span> <span class="k">const</span> <span class="k">throw</span><span class="p">();</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">my_exc2</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="kt">char</span> <span class="k">const</span><span class="o">*</span> <span class="n">what</span><span class="p">()</span> <span class="k">const</span> <span class="k">throw</span><span class="p">();</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">your_exc3</span> <span class="o">:</span> <span class="n">my_exc1</span><span class="p">,</span> <span class="n">my_exc2</span> <span class="p">{};</span>
+
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span> <span class="k">throw</span> <span class="n">your_exc3</span><span class="p">();</span> <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{}</span>
+    <span class="k">catch</span><span class="p">(...)</span> <span class="p">{</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"whoops!"</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span> <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The program above outputs "whoops!" because the conversion to std::exception is ambiguous.</p>
+</div>
+<div class="paragraph">
+<p>The overhead introduced by virtual inheritance is always negligible in the context of exception handling. Note that virtual bases are initialized directly by the constructor of the most-derived-type (the type passed to the throw statement, in case of exceptions.) However, typically this detail is of no concern when <code>boost::<a href="#exception">exception</a></code> is used, because it enables exception types to be trivial structs with no members (there&#8217;s nothing to initialize.) See <a href="#exception_types_as_simple_semantic_tags">Exception Types as Simple Semantic Tags</a>.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="tutorial_diagnostic_information">Diagnostic Information</h3>
+<div class="paragraph">
+<p>Boost Exception provides a namespace-scope function <code><a href="#diagnostic_information">diagnostic_information</a></code> which takes a <code>boost::<a href="#exception">exception</a></code>. The returned string contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the string representation of all data objects added to the <code>boost::<a href="#exception">exception</a></code> through <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>;</p>
+</li>
+<li>
+<p>the output from std::exception::what;</p>
+</li>
+<li>
+<p>additional platform-specific diagnostic information.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The returned string is not presentable as a friendly user message, but because it is generated automatically, it is useful for debugging or logging purposes. Here is an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/all.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span>
+<span class="kt">void</span> <span class="nf">f</span><span class="p">();</span> <span class="c1">//throws unknown types that derive from boost::exception.</span>
+
+<span class="kt">void</span>
+<span class="nf">g</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="n">f</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">diagnostic_information</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#diagnostic_information"><code>diagnostic_information</code></a></p>
+</div>
+<div class="paragraph">
+<div class="title">Example:</div>
+<p>this is a possible output from the <code><a href="#diagnostic_information">diagnostic_information</a></code> function, as used in <em>libs/exception/example/example_io.cpp:</em></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">example_io.cpp(70): Throw in function class boost::shared_ptr&lt;struct _iobuf&gt; __cdecl my_fopen(const char *,const char *)
+Dynamic exception type: class boost::exception_detail::clone_impl&lt;struct fopen_error&gt;
+std::exception::what: example_io error
+[struct boost::errinfo_api_function_ *] = fopen
+[struct boost::errinfo_errno_ *] = 2, "No such file or directory"
+[struct boost::errinfo_file_name_ *] = tmp1.txt
+[struct boost::errinfo_file_open_mode_ *] = rb</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="synopsis">Synopsis</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section lists each public header file, documenting the definitions it provides.</p>
+</div>
+<div class="sect2">
+<h3 id="synopsis-exception"><code>exception.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">exception</span>
+    <span class="p">{</span>
+    <span class="nl">protected:</span>
+        <span class="n">exception</span><span class="p">();</span>
+        <span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+        <span class="o">~</span><span class="n">exception</span><span class="p">();</span>
+    <span class="p">};</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">class</span> <span class="nc">error_info</span><span class="p">;</span>
+
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">throw_function_</span><span class="p">,</span><span class="kt">char</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">throw_function</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">throw_file_</span><span class="p">,</span><span class="kt">char</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">throw_file</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">throw_line_</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">throw_line</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#exception"><code>exception</code></a> | <a href="#error_info"><code>error_info</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-error_info"><code>error_info.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/error_info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">class</span> <span class="nc">error_info</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#error_info"><code>error_info</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-info"><code>info.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">class</span> <span class="nc">error_info</span>
+    <span class="p">{</span>
+    <span class="nl">public:</span>
+        <span class="k">typedef</span> <span class="n">T</span> <span class="n">value_type</span><span class="p">;</span>
+
+        <span class="n">error_info</span><span class="p">(</span> <span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+
+        <span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+        <span class="n">value_type</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">();</span>
+    <span class="p">};</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="n">Tag</span><span class="p">,</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#error_info"><code>error_info</code></a> | <a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-info_tuple"><code>info_tuple.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/info_tuple.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/tuple/tuple.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Tag1</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T1</span><span class="p">,</span> <span class="p">...,</span> <span class="k">class</span> <span class="nc">TagN</span><span class="p">,</span> <span class="k">class</span> <span class="nc">TN</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span>
+        <span class="n">tuple</span><span class="o">&lt;</span>
+            <span class="n">error_info</span><span class="o">&lt;</span><span class="n">Tag1</span><span class="p">,</span><span class="n">T1</span><span class="o">&gt;</span><span class="p">,</span>
+            <span class="p">...,</span>
+            <span class="n">error_info</span><span class="o">&lt;</span><span class="n">TagN</span><span class="p">,</span><span class="n">TN</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#tuple_operator_shl"><code>tuple/operator&lt;&lt;</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-enable_error_info"><code>enable_error_info.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/enable_error_info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">enable_error_info</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#enable_error_info"><code>enable_error_info</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-diagnostic_information"><code>diagnostic_information.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">exception</span><span class="p">;</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">diagnostic_information</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">);</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">diagnostic_information</span><span class="p">(</span> <span class="n">exception_ptr</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">p</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">);</span>
+
+    <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">diagnostic_information_what</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">)</span> <span class="k">throw</span><span class="p">();</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">current_exception_diagnostic_information</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#diagnostic_information"><code>diagnostic_information</code></a> | <a href="#diagnostic_information_what"><code>diagnostic_information_what</code></a> | <a href="#current_exception_diagnostic_information"><code>current_exception_diagnostic_information</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-current_exception_cast"><code>current_exception_cast.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/current_exception_cast.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="o">*</span> <span class="n">current_exception_cast</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#current_exception_cast"><code>current_exception_cast</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-exception_ptr"><code>exception_ptr.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">unknown_exception</span><span class="o">:</span>
+        <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span>
+        <span class="k">public</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span>
+    <span class="p">{</span>
+        <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span>
+    <span class="p">};</span>
+
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_original_exception_type</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">type_info</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">original_exception_type</span><span class="p">;</span>
+
+    <span class="k">typedef</span> <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">exception_ptr</span><span class="p">;</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="n">exception_ptr</span> <span class="nf">copy_exception</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+
+    <span class="n">exception_ptr</span> <span class="nf">current_exception</span><span class="p">();</span>
+
+    <span class="kt">void</span> <span class="nf">rethrow_exception</span><span class="p">(</span> <span class="n">exception_ptr</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">ep</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#exception_ptr"><code>exception_ptr</code></a> | <a href="#unknown_exception"><code>unknown_exception</code></a> | <a href="#original_exception_type"><code>original_exception_type</code></a> | <a href="#copy_exception"><code>copy_exception</code></a> | <a href="#current_exception"><code>current_exception</code></a> | <a href="#rethrow_exception"><code>rethrow_exception</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-enable_current_exception"><code>enable_current_exception.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/enable_current_exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">enable_current_exception</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#enable_current_exception"><code>enable_current_exception</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-throw_exception"><code>throw_exception.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/throw_exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#if !defined( BOOST_EXCEPTION_DISABLE )
+</span>    <span class="cp">#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+</span>    <span class="cp">#include</span> <span class="cpf">&lt;boost/current_function.hpp&gt;</span><span class="cp">
+</span>    <span class="cp">#define BOOST_THROW_EXCEPTION(x)\
+        ::boost::throw_exception( ::boost::enable_error_info(x) &lt;&lt;\
+        ::boost::throw_file(__FILE__) &lt;&lt;\
+        ::boost::throw_line((int)__LINE__) )
+#else
+</span>    <span class="cp">#define BOOST_THROW_EXCEPTION(x) ::boost::throw_exception(x)
+#endif
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+<span class="cp">#ifdef BOOST_NO_EXCEPTIONS
+</span>    <span class="kt">void</span> <span class="n">throw_exception</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span> <span class="c1">// user defined</span>
+<span class="cp">#else
+</span>    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">throw_exception</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="cp">#endif
+</span><span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#throw_exception"><code>throw_exception</code></a> | <a href="#BOOST_THROW_EXCEPTION"><code>BOOST_THROW_EXCEPTION</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_api_function"><code>errinfo_api_function.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_api_function.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_api_function_</span><span class="p">,</span><span class="kt">char</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">errinfo_api_function</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_api_function"><code>errinfo_api_function</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_at_line"><code>errinfo_at_line.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_at_line.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_at_line_</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errinfo_at_line</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_at_line"><code>errinfo_at_line</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_errno"><code>errinfo_errno.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_errno.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_errno_</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errinfo_errno</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_errno"><code>errinfo_errno</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_file_handle"><code>errinfo_file_handle.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_handle.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span><span class="p">&gt;</span> <span class="k">class</span> <span class="nc">weak_ptr</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_handle_</span><span class="p">,</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">errinfo_file_handle</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_file_handle"><code>errinfo_file_handle</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_file_name"><code>errinfo_file_name.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_name.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_name_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_file_name</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_file_name"><code>errinfo_file_name</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_file_open_mode"><code>errinfo_file_open_mode.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_open_mode.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_open_mode_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_file_open_mode</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_file_open_mode"><code>errinfo_file_open_mode</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_nested_exception"><code>errinfo_nested_exception.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_nested_exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">exception_ptr</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_nested_exception_</span><span class="p">,</span><span class="n">exception_ptr</span><span class="o">&gt;</span> <span class="n">errinfo_nested_exception</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_nested_exception"><code>errinfo_nested_exception</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-errinfo_type_info_name"><code>errinfo_type_info_name.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_type_info_name.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_type_info_name_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_type_info_name</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#errinfo_type_info_name"><code>errinfo_type_info_name</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="synopsis-all"><code>all.hpp</code></h3>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/all.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/diagnostic_information.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/exception.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/get_error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/info_tuple.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_api_function.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_at_line.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_errno.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_handle.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_name.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_open_mode.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_type_info_name.hpp&gt;</span><span class="cp">
+#ifndef BOOST_NO_EXCEPTIONS
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_nested_exception.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception_ptr.hpp&gt;</span><span class="cp">
+#endif</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This header includes all Boost Exception headers except <code><a href="#synopsis-exception_ptr">boost/exception_ptr.hpp</a></code> (unless BOOST_NO_EXCEPTIONS is defined.)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="reference">Reference</h2>
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The contents of each Reference section are organized alphabetically.
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-none grid-none stretch">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#types">Types</a> | <a href="#functions">Functions</a> | <a href="#macros">Macros</a> | <a href="#configuration_macros">Configuration Macros</a></p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="types">Types</h3>
+<div class="sect3">
+<h4 id="exception"><code>exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">exception</span>
+    <span class="p">{</span>
+    <span class="nl">protected:</span>
+
+        <span class="n">exception</span><span class="p">();</span>
+        <span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+        <span class="o">~</span><span class="n">exception</span><span class="p">();</span>
+    <span class="p">};</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Class <code>boost::exception</code> is designed to be used as a universal base for user-defined exception types.</p>
+</div>
+<div class="paragraph">
+<p>An object of any type deriving from <code>boost::exception</code> can store data of arbitrary types, using the <code><a href="#error_info">error_info</a></code> wrapper and <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>To retrieve data from a <code>boost::exception</code> object, use the <code><a href="#get_error_info">get_error_info</a></code> function template.</p>
+</div>
+<div class="sect4">
+<h5 id="exception_constructors"><code>exception::exception</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">exception</span><span class="p">();</span>
+<span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>Default constructor: initializes an empty <code>boost::exception</code> object.</p>
+</li>
+<li>
+<p>Copy constructor: initializes a <code>boost::exception</code> object which shares with x the pointers to all currently stored data. Subsequently, data can be added to or retrieved from both exception objects interchangeably, however doing so concurrently from multiple threads is undefined behavior.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect4">
+<h5 id="exception_destructor"><code>exception::~exception</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="o">~</span><span class="n">exception</span><span class="p">();</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Releases all resources associated with the <code>boost::exception</code> object.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect3">
+<h4 id="error_info"><code>error_info</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">class</span> <span class="nc">error_info</span>
+    <span class="p">{</span>
+    <span class="nl">public:</span>
+
+        <span class="k">typedef</span> <span class="n">T</span> <span class="n">value_type</span><span class="p">;</span>
+
+        <span class="n">error_info</span><span class="p">(</span> <span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+
+        <span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+        <span class="n">value_type</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">();</span>
+    <span class="p">};</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>T must have accessible copy constructor and must not be a reference (there is no requirement that T&#8217;s copy constructor does not throw.)</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This class template is used to associate a Tag type with a value type T. Objects of type <code>error_info&lt;Tag,T&gt;</code> can be passed to <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> to be stored in objects of type <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>The header <code>&lt;boost/exception/error_info.hpp&gt;</code> provides a declaration of the <code>error_info</code> template, which is sufficient for the purpose of typedefing an instance for specific Tag and T, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">tag_errno</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="n">tag_errno</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errno_info</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or, the shorter equivalent:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_errno</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errno_info</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This errno_info typedef can be passed to <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> (#include <code>&lt;boost/exception/info.hpp&gt;</code> first) to store an int named tag_errno in exceptions of types that derive from <code>boost::<a href="#exception">exception</a></code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">throw</span> <span class="nf">file_read_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">errno_info</span><span class="p">(</span><span class="n">errno</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It can also be passed to <code><a href="#get_error_info">get_error_info</a></code> (#include <code>&lt;boost/exception/get_error_info.hpp&gt;</code> first) to retrieve the tag_errno int from a <code>boost::<a href="#exception">exception</a></code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="kt">int</span> <span class="k">const</span> <span class="o">*</span> <span class="n">e</span><span class="o">=</span><span class="n">boost</span><span class="o">::</span><span class="n">get_error_info</span><span class="o">&lt;</span><span class="n">errno_info</span><span class="o">&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">)</span>
+        <span class="p">....</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For convenience and uniformity, Boost Exception defines the following commonly used <code>error_info</code> typedefs, ready for use with <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#errinfo_api_function"><code>errinfo_api_function</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_at_line"><code>errinfo_at_line</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_errno"><code>errinfo_errno</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_file_handle"><code>errinfo_file_handle</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_file_name"><code>errinfo_file_name</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_file_open_mode"><code>errinfo_file_open_mode</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_nested_exception"><code>errinfo_nested_exception</code></a></p>
+</li>
+<li>
+<p><a href="#errinfo_type_info_name"><code>errinfo_type_info_name</code></a></p>
+</li>
+</ul>
+</div>
+<div class="sect4">
+<h5 id="error_info_error_info"><code>error_info::error_info</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">error_info</span><span class="p">(</span> <span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Stores a copy of v.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Whatever T&#8217;s copy constructor throws.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect4">
+<h5 id="error_info_value_type"><code>error_info::value_type</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">typedef</span> <span class="n">T</span> <span class="n">value_type</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is the same as the <code>error_info</code> T parameter.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="error_info_value"><code>error_info::value</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">value_type</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">value_type</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">();</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>A reference to the copy of the value passed to the <code>error_info</code> constructor.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect3">
+<h4 id="errinfo_api_function"><code>errinfo_api_function</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_api_function.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_api_function_</span><span class="p">,</span><span class="kt">char</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">errinfo_api_function</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting the name of a failed API function in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_at_line"><code>errinfo_at_line</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_at_line.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_at_line_</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errinfo_at_line</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a line number in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_errno"><code>errinfo_errno</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_errno.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_errno_</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errinfo_errno</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a relevant errno value in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">Example:</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/errinfo_api_function.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_at_line.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_errno.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_handle.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_name.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/errinfo_file_open_mode.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/exception/info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/throw_exception.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/shared_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/weak_ptr.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;exception&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">error</span> <span class="o">:</span> <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_error</span> <span class="o">:</span> <span class="k">virtual</span> <span class="n">error</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_open_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">file_error</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">file_error</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span>
+<span class="n">open_file</span><span class="p">(</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">file</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">mode</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="o">=</span><span class="n">fopen</span><span class="p">(</span><span class="n">file</span><span class="p">,</span><span class="n">mode</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">fclose</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="n">BOOST_THROW_EXCEPTION</span><span class="p">(</span>
+            <span class="n">file_open_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_api_function</span><span class="p">(</span><span class="s">"fopen"</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_errno</span><span class="p">(</span><span class="n">errno</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_file_name</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_file_open_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+<span class="kt">size_t</span>
+<span class="nf">read_file</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">buf</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">size</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="kt">size_t</span> <span class="n">nr</span><span class="o">=</span><span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">,</span><span class="n">f</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">ferror</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">get</span><span class="p">())</span> <span class="p">)</span>
+        <span class="n">BOOST_THROW_EXCEPTION</span><span class="p">(</span>
+            <span class="n">file_read_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_api_function</span><span class="p">(</span><span class="s">"fread"</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_errno</span><span class="p">(</span><span class="n">errno</span><span class="p">)</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">errinfo_file_handle</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">);</span>
+    <span class="k">return</span> <span class="n">nr</span><span class="p">;</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_file_handle"><code>errinfo_file_handle</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_handle.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span><span class="p">&gt;</span> <span class="k">class</span> <span class="nc">weak_ptr</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_handle_</span><span class="p">,</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">errinfo_file_handle</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a FILE pointer in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_file_name"><code>errinfo_file_name</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_name.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_name_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_file_name</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a file name in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_file_open_mode"><code>errinfo_file_open_mode</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_file_open_mode.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_file_open_mode_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_file_open_mode</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a fopen file open mode in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_nested_exception"><code>errinfo_nested_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_nested_exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">exception_ptr</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_nested_exception_</span><span class="p">,</span><span class="n">exception_ptr</span><span class="o">&gt;</span> <span class="n">errinfo_nested_exception</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a nested exception in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="errinfo_type_info_name"><code>errinfo_type_info_name</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/errinfo_type_info_name.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/error_info.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span>
+<span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_type_info_name_</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_type_info_name</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is designed to be used as a standard <code><a href="#error_info">error_info</a></code> instance for transporting a type name in exceptions deriving from <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="exception_ptr"><code>exception_ptr</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">exception_ptr</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>exception_ptr</code> type can be used to refer to a copy of an exception object. It is Default Constructible, Copy Constructible, Assignable and Equality Comparable; `exception_ptr&#8217;s operations do not throw.</p>
+</div>
+<div class="paragraph">
+<p>The referenced object remains valid at least as long as there is an <code>exception_ptr</code> object that refers to it.</p>
+</div>
+<div class="paragraph">
+<p>Two instances of <code>exception_ptr</code> are equivalent and compare equal if and only if they refer to the same exception.</p>
+</div>
+<div class="paragraph">
+<p>The default constructor of <code>exception_ptr</code> produces the null value of the type. The null value is equivalent only to itself.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Thread safety: </dt>
+<dd>
+<p>The <code>exception_ptr</code> type is "as thread-safe as built-in types":</p>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>An <code>exception_ptr</code> instance can be "read" simultaneously by multiple threads</p>
+</li>
+<li>
+<p>Different <code>exception_ptr</code> instances can be "written to" simultaneously by multiple threads, even when these instances refer to the same exception object</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>All other simultaneous accesses result in undefined behavior.</p>
+</div>
+</dd>
+<dt class="hdlist1">Nesting of exceptions: </dt>
+<dd>
+<p>An <code>exception_ptr</code> can be added as <code><a href="#error_info">error_info</a></code> to any <code>boost::<a href="#exception">exception</a></code>. This is a convenient way to nest exceptions. There is no limit on the depth of the nesting, however cyclic references result in undefined behavior.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="original_exception_type"><code>original_exception_type</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_original_exception_type</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">type_info</span> <span class="k">const</span> <span class="o">*&gt;</span> <span class="n">original_exception_type</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is used by the <code><a href="#exception_ptr">exception_ptr</a></code> support in Boost Exception. Please see <code><a href="#current_exception">current_exception</a></code>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="unknown_exception"><code>unknown_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">unknown_exception</span><span class="o">:</span>
+        <span class="k">public</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span>
+        <span class="k">public</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span>
+    <span class="p">{</span>
+        <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span>
+    <span class="p">};</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This type is used by the <code><a href="#exception_ptr">exception_ptr</a></code> support in Boost Exception. Please see <code><a href="#current_exception">current_exception</a></code>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="functions">Functions</h3>
+<div class="sect3">
+<h4 id="copy_exception"><code>copy_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="n">exception_ptr</span> <span class="n">copy_exception</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>As if</p>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">try</span>
+    <span class="p">{</span>
+    <span class="k">throw</span> <span class="n">enable_current_exception</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="k">catch</span><span class="p">(...)</span>
+    <span class="p">{</span>
+    <span class="k">return</span> <span class="n">current_exception</span><span class="p">();</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="current_exception"><code>current_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="n">exception_ptr</span> <span class="n">current_exception</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>The <code>current_exception</code> function must not be called outside of a catch block.</p>
+<div class="paragraph">
+<p>In addition, to safely copy an exception from one thread to another, if the exception object is copied by <code>current_exception</code> or <code><a href="#copy_exception">copy_exception</a></code>, the two copies must not have shared state. Exceptions that have value-type semantics (as well as the <code>boost::<a href="#exception">exception</a></code> type itself) satisfy this requirement.</p>
+</div>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>An <code><a href="#exception_ptr">exception_ptr</a></code> that refers to the currently handled exception or a copy of the currently handled exception.</p>
+</li>
+<li>
+<p>If the function needs to allocate memory and the attempt fails, it returns an <code><a href="#exception_ptr">exception_ptr</a></code> that refers to an instance of std::bad_alloc.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+<dt class="hdlist1">Notes: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>It is unspecified whether the return values of two successive calls to <code>current_exception</code> refer to the same exception object.</p>
+</li>
+<li>
+<p>Correct implementation of <code>current_exception</code> may require compiler support (e.g. C&#43;&#43;11 <a href="https://en.cppreference.com/w/cpp/error/current_exception">std::current_exception()</a> is used when available, as specified by Boost.Config BOOST_NO_CXX11_HDR_EXCEPTION), unless <code><a href="#enable_current_exception">enable_current_exception</a></code> was used at the time the currently handled exception object was passed to throw. Whenever <code>current_exception</code> fails to properly copy the current exception object, it returns an <code><a href="#exception_ptr">exception_ptr</a></code> to an object of type that is as close as possible to the original exception type, using <code><a href="#unknown_exception">unknown_exception</a></code> as a final fallback. All such types derive from <code>boost::<a href="#exception">exception</a></code>, and:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>if the original exception object derives from <code>boost::<a href="#exception">exception</a></code>, then the <code>boost::<a href="#exception">exception</a></code> sub-object of the object referred to by the returned <code><a href="#exception_ptr">exception_ptr</a></code> is initialized by the <code>boost::<a href="#exception">exception</a></code> copy constructor;</p>
+</li>
+<li>
+<p>if available, the exception contains the std::type_info of the original exception object, accessible through <code><a href="#get_error_info">get_error_info</a></code>&lt;`<a href="#original_exception_type">original_exception_type</a>`&gt;.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="current_exception_cast"><code>current_exception_cast</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/current_exception_cast.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="o">*</span> <span class="n">current_exception_cast</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>This function must not be called outside of a catch block.</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>A pointer of type E to the current exception object, or null if the current exception object can not be converted to E *.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="current_exception_diagnostic_information"><code>current_exception_diagnostic_information</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">current_exception_diagnostic_information</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>This function must not be called outside of a catch block.</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>If the current exception object can be converted to <code>boost::<a href="#exception">exception</a></code> or std::exception, this function returns the same string value returned by <code><a href="#diagnostic_information">diagnostic_information</a></code> for the current exception object. Otherwise, an unspecified non-empty string is returned.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Typical use is to call <code>current_exception_diagnostic_information</code> from a top-level function to output diagnostic information about unhandled exceptions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="kt">int</span>
+<span class="nf">main</span><span class="p">()</span>
+    <span class="p">{</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="n">run_program</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="n">error</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="c1">//handle error</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(</span>
+    <span class="p">...)</span>
+        <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"Unhandled exception!"</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span> <span class="o">&lt;&lt;</span>
+            <span class="n">boost</span><span class="o">::</span><span class="n">current_exception_diagnostic_information</span><span class="p">();</span>
+        <span class="p">}</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="diagnostic_information"><code>diagnostic_information</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">diagnostic_information</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">);</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">diagnostic_information</span><span class="p">(</span> <span class="n">exception_ptr</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">p</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>A string value that contains varying amount of diagnostic information about the passed object:</p>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>If E can be statically converted to either <code>boost::<a href="#exception">exception</a></code> or to std::exception, dynamic_cast is used to access both the <code>boost::<a href="#exception">exception</a></code> and std::exception subobjects of e; otherwise, the <code>boost::diagnostic_information</code> template is not available.</p>
+</li>
+<li>
+<p>The returned value contains the string representations of all <code><a href="#error_info">error_info</a></code> objects stored in the <code>boost::<a href="#exception">exception</a></code> subobject through <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>.</p>
+</li>
+<li>
+<p>In addition, if verbose is true, it contains other diagnostic information relevant to the exception, including the string returned by std::exception::what().</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The string representation of each <code><a href="#error_info">error_info</a></code> object is deduced by an unqualified call to to_string(x), where x is of type <code><a href="#error_info">error_info</a>&lt;Tag,T&gt;</code>, for which Boost Exception defines a generic overload. It converts x.<code><a href="#error_info_value">value</a></code>() to string, attempting to bind (at the time the <code><a href="#error_info">error_info</a>&lt;Tag,T&gt;</code> template is instantiated) the following functions in order:</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Unqualified call to to_string(x.<code><a href="#error_info_value">value</a></code>()) (the return value is expected to be of type std::string.)</p>
+</li>
+<li>
+<p>Unqualified call to s &lt;&lt; x.<code><a href="#error_info_value">value</a></code>(), where s is a std::ostringstream.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>The first successfully bound function is used at the time <code>diagnostic_information</code> is called; if both overload resolutions are unsuccessful, the system is unable to convert the <code><a href="#error_info">error_info</a></code> object to string, and <em>an unspecified stub string value is used without issuing a compile error.</em></p>
+</div>
+<div class="paragraph">
+<p>The <code><a href="#exception_ptr">exception_ptr</a></code> overload of <code>diagnostic_information</code> is equivalent to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">if</span><span class="p">(</span> <span class="n">p</span> <span class="p">)</span>
+    <span class="k">try</span>
+        <span class="p">{</span>
+        <span class="n">rethrow_exception</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="k">catch</span><span class="p">(...)</span>
+        <span class="p">{</span>
+        <span class="k">return</span> <span class="n">current_exception_diagnostic_information</span><span class="p">(</span><span class="n">verbose</span><span class="p">);</span>
+        <span class="p">}</span>
+<span class="k">else</span> <span class="k">return</span> <span class="o">&lt;</span><span class="n">unspecified</span><span class="o">-</span><span class="n">string</span><span class="o">-</span><span class="n">value</span><span class="o">&gt;</span><span class="p">;</span></code></pre>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<div class="title">Example:</div>
+<p>this is a possible output from the <code>diagnostic_information</code> function, as used in <em>libs/exception/example/example_io.cpp:</em></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">example_io.cpp(70): Throw in function class boost::shared_ptr&lt;struct _iobuf&gt; __cdecl my_fopen(const char *,const char *)
+Dynamic exception type: class boost::exception_detail::clone_impl&lt;struct fopen_error&gt;
+std::exception::what: example_io error
+[struct boost::errinfo_api_function_ *] = fopen
+[struct boost::errinfo_errno_ *] = 2, "No such file or directory"
+[struct boost::errinfo_file_name_ *] = tmp1.txt
+[struct boost::errinfo_file_open_mode_ *] = rb</pre>
+</div>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="diagnostic_information_what"><code>diagnostic_information_what</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">diagnostic_information_what</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">)</span> <span class="k">throw</span><span class="p">();</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>diagnostic_information_what</code> function is intended to be called from a user-defined std::exception::what() override. This allows diagnostic information to be returned as the what() string.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>A pointer to a zero-terminated buffer that contains a string similar to the std::string returned by the <code><a href="#diagnostic_information">diagnostic_information</a></code> function, or null to indicate a failure.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+<dt class="hdlist1">Note: </dt>
+<dd>
+<p>The returned pointer becomes invalid if any <code><a href="#error_info">error_info</a></code> is modified or added to the exception object, or if another diagnostic information function is called.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="enable_current_exception"><code>enable_current_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/enable_current_exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">enable_current_exception</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>T must be a class with an accessible no-throw copy constructor.</p>
+</li>
+<li>
+<p>If T has any virtual base types, those types must have an accessible default constructor.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>An object of <em>unspecified</em> type which derives publicly from T. That is, the returned object can be intercepted by a catch(T &amp;).</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>This function is designed to be used directly in a throw-expression to enable the <code><a href="#exception_ptr">exception_ptr</a></code> support in Boost Exception. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">class</span>
+<span class="nl">my_exception:</span>
+    <span class="nc">public</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span>
+    <span class="p">{</span>
+    <span class="p">};</span>
+
+<span class="p">....</span>
+<span class="k">throw</span> <span class="n">boost</span><span class="o">::</span><span class="n">enable_current_exception</span><span class="p">(</span><span class="n">my_exception</span><span class="p">());</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unless <code>enable_current_exception</code> is called at the time an exception object is used in a throw-expression, an attempt to copy it using <code><a href="#current_exception">current_exception</a></code> may return an <code><a href="#exception_ptr">exception_ptr</a></code> which refers to an instance of <code><a href="#unknown_exception">unknown_exception</a></code>. See <code><a href="#current_exception">current_exception</a></code> for details.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Note: </dt>
+<dd>
+<p>Instead of using the throw keyword directly, it is preferable to call <code>boost::<a href="#throw_exception">throw_exception</a></code>. This is guaranteed to throw an exception that derives from <code>boost::<a href="#exception">exception</a></code> and supports the <code><a href="#exception_ptr">exception_ptr</a></code> functionality.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="enable_error_info"><code>enable_error_info</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/enable_error_info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="o">---</span><span class="n">unspecified</span><span class="o">---</span> <span class="n">enable_error_info</span><span class="p">(</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>T must be a class with an accessible no-throw copy constructor as per (15.5.1).</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>If T derives from <code>boost::<a href="#exception">exception</a></code>, the returned object is of type T and is a copy of x.</p>
+</li>
+<li>
+<p>Otherwise, the returned object is of an unspecified type that derives publicly from both T and <code>boost::<a href="#exception">exception</a></code>. The T sub-object is initialized from x by the T copy constructor.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="get_error_info"><code>get_error_info</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/get_error_info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">ErrorInfo</span><span class="p">,</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="k">typename</span> <span class="n">ErrorInfo</span><span class="o">::</span><span class="n">value_type</span> <span class="k">const</span> <span class="o">*</span> <span class="n">get_error_info</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">ErrorInfo</span><span class="p">,</span><span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="k">typename</span> <span class="n">ErrorInfo</span><span class="o">::</span><span class="n">value_type</span> <span class="o">*</span> <span class="n">get_error_info</span><span class="p">(</span> <span class="n">E</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>ErrorInfo must be an instance of the <code><a href="#error_info">error_info</a></code> template.</p>
+</li>
+<li>
+<p>E must be polymorphic.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>If dynamic_cast&lt;boost::<a href="#exception">exception</a> const *&gt;(&amp;x) is 0, or if x does not store an object of type ErrorInfo, the returned value is null.</p>
+</li>
+<li>
+<p>Otherwise, the returned pointer points to the stored value (use <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> to store values in exception objects.) When x is destroyed, any pointers returned by <code>get_error_info</code> become invalid.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+<dt class="hdlist1">Note: </dt>
+<dd>
+<p>The interface of <code>get_error_info</code> may be affected by the build <a href="#configuration_macros">configuration macros</a>.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="exception_operator_shl"><code>operator&lt;&lt;</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/info.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Tag</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="n">error_info</span><span class="o">&lt;</span><span class="n">Tag</span><span class="p">,</span><span class="n">T</span><span class="o">&gt;</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>E must be <code>boost::<a href="#exception">exception</a></code>, or a type that derives (indirectly) from <code>boost::<a href="#exception">exception</a></code>.</p>
+</dd>
+<dt class="hdlist1">Postcondition: </dt>
+<dd>
+<p>A copy of v is stored into x. If x already contains data of type <code><a href="#error_info">error_info</a>&lt;Tag,T&gt;</code>, that data is overwritten. Basic exception safety guarantee.</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>x.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>std::bad_alloc, or any exception emitted by the T copy constructor.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="rethrow_exception"><code>rethrow_exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="kt">void</span> <span class="n">rethrow_exception</span><span class="p">(</span> <span class="n">exception_ptr</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">ep</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Precondition: </dt>
+<dd>
+<p>ep shall not be null.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>The exception to which ep refers.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="throw_exception"><code>throw_exception</code></h4>
+<div class="paragraph">
+<p>Please see <a href="https://www.boost.org/doc/libs/release/libs/throw_exception/doc/html/throw_exception.html">Boost.ThrowException</a>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="tuple_operator_shl"><code>tuple/operator&lt;&lt;</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/info_tuple.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">E</span><span class="p">,</span> <span class="k">class</span> <span class="nc">Tag1</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T1</span><span class="p">,</span> <span class="p">...,</span> <span class="k">class</span> <span class="nc">TagN</span><span class="p">,</span> <span class="k">class</span> <span class="nc">TN</span><span class="p">&gt;</span>
+    <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span>
+        <span class="n">tuple</span><span class="o">&lt;</span>
+            <span class="n">error_info</span><span class="o">&lt;</span><span class="n">Tag1</span><span class="p">,</span><span class="n">T1</span><span class="o">&gt;</span><span class="p">,</span>
+            <span class="p">...,</span>
+            <span class="n">error_info</span><span class="o">&lt;</span><span class="n">TagN</span><span class="p">,</span><span class="n">TN</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">v</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>E must be <code>boost::<a href="#exception">exception</a></code>, or a type that derives (indirectly) from <code>boost::<a href="#exception">exception</a></code>.</p>
+</dd>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Equivalent to x &lt;&lt; v.http://www.boost.org/libs/tuple/doc/tuple_users_guide.html#accessing_elements[get]&lt;0&gt;() &lt;&lt; &#8230;&#8203; &lt;&lt; v.http://www.boost.org/libs/tuple/doc/tuple_users_guide.html#accessing_elements[get]&lt;N&gt;().</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>x.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>std::bad_alloc, or any exception emitted by T1..TN copy constructor.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="macros">Macros</h3>
+<div class="sect3">
+<h4 id="BOOST_THROW_EXCEPTION"><code>BOOST_THROW_EXCEPTION</code></h4>
+<div class="paragraph">
+<p>Please see <a href="https://www.boost.org/doc/libs/release/libs/throw_exception/doc/html/throw_exception.html">Boost.ThrowException</a>.</p>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="configuration_macros">Configuration Macros</h3>
+<div class="paragraph">
+<p>Boost Exception responds to the following configuration macros:</p>
+</div>
+<div class="paragraph">
+<p><strong>BOOST_NO_RTTI</strong><br>
+<strong>BOOST_NO_TYPEID</strong> (both defined automatically by boost/config.hpp)</p>
+</div>
+<div class="paragraph">
+<p>The first macro prevents Boost Exception from using dynamic_cast and dynamic typeid. If the second macro is also defined, Boost Exception does not use static typeid either. There are no observable degrading effects on the library functionality, except for the following: by default, the <code><a href="#get_error_info">get_error_info</a></code> function template can be called with any exception type; if BOOST_NO_RTTI is defined, <code><a href="#get_error_info">get_error_info</a></code> can be used only with objects of type <code>boost::<a href="#exception">exception</a></code>.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Note: </dt>
+<dd>
+<p>The library needs RTTI functionality. Disabling the language RTTI support enables an internal RTTI system, which may have more or less overhead depending on the platform.</p>
+<div class="paragraph">
+<p>Note that on some non-conformant compilers, for example MSVC 7.0 and older, as well as BCC, BOOST_EXCEPTION_DISABLE is implicitly defined in <code><a href="#boost_throw_exception_hpp">boost/throw_exception.hpp</a></code>.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p><strong>BOOST_NO_EXCEPTIONS</strong> (defined automatically by boost/config.hpp)</p>
+</div>
+<div class="paragraph">
+<p>This macro disables exception handling in Boost, forwarding all exceptions to a user-defined non-template version of <code>boost::<a href="#throw_exception">throw_exception</a></code>. However, unless BOOST_EXCEPTION_DISABLE is also defined, users can still examine the exception object for any data added at the point of the throw, or use <code>boost::<a href="#diagnostic_information">diagnostic_information</a></code> (of course under BOOST_NO_EXCEPTIONS, the user-defined boost::throw_exception is not allowed to return to the caller.)</p>
+</div>
+<div class="paragraph">
+<p>In addition, the following user-defined macros are recognized:</p>
+</div>
+<div class="paragraph">
+<p><strong>BOOST_EXCEPTION_DISABLE</strong> (user-defined)</p>
+</div>
+<div class="paragraph">
+<p>By default, <code><a href="#enable_current_exception">enable_current_exception</a></code> and <code><a href="#enable_error_info">enable_error_info</a></code> are integrated directly in the <code><a href="#throw_exception">throw_exception</a></code> function. Defining BOOST_EXCEPTION_DISABLE disables this integration.</p>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="motivation">Design Rationale</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Traditionally, when using exceptions to report failures, the throw site:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>creates an exception object of the appropriate type, and</p>
+</li>
+<li>
+<p>stuffs it with data relevant to the detected error.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A higher context in the program contains a catch statement which:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>selects failures based on exception types, and</p>
+</li>
+<li>
+<p>inspects exception objects for data required to deal with the problem.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The main issue with this "traditional" approach is that often, the data available at the point of the throw is insufficient for the catch site to handle the failure.</p>
+</div>
+<div class="paragraph">
+<p>Here is an example of a catch statement:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(</span> <span class="n">file_read_error</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">file_name</span><span class="p">();</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And here is a possible matching throw:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="kt">void</span>
+<span class="nf">read_file</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">....</span>
+    <span class="kt">size_t</span> <span class="n">nr</span><span class="o">=</span><span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">f</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">ferror</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">file_read_error</span><span class="p">(</span><span class="o">???</span><span class="p">);</span>
+    <span class="p">....</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Clearly, the problem is that the handler requires a file name but the read_file function does not have a file name to put in the exception object; all it has is a FILE pointer!</p>
+</div>
+<div class="paragraph">
+<p>In an attempt to deal with this problem, we could modify read_file to accept a file name:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="kt">void</span>
+<span class="nf">read_file</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">....</span>
+    <span class="kt">size_t</span> <span class="n">nr</span><span class="o">=</span><span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">f</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">ferror</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">file_read_error</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+    <span class="p">....</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is not a real solution: it simply shifts the burden of supplying a file name to the immediate caller of the read_file function.</p>
+</div>
+<div class="paragraph">
+<p>In general, the data required to handle a given library-emitted exception depends on the program that links to it. Many contexts between the throw and the catch may have relevant information which must be transported to the exception handler.</p>
+</div>
+<div class="sect2">
+<h3 id="_exception_wrapping">Exception wrapping</h3>
+<div class="paragraph">
+<p>The idea of exception wrapping is to catch an exception from a lower level function (such as the read_file function above), and throw a new exception object that contains the original exception (and also carries a file name.) This method seems to be particularly popular with C&#43;&#43; programmers with Java background.</p>
+</div>
+<div class="paragraph">
+<p>Exception wrapping leads to the following problems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To wrap an exception object it must be copied, which may result in slicing.</p>
+</li>
+<li>
+<p>Wrapping is practically impossible to use in generic contexts.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The second point is actually special case of violating the exception neutrality principle. Most contexts in a program can not handle exceptions; such contexts should not interfere with the process of exception handling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_boostexception_solution">The boost::exception solution</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Simply derive your exception types from <code>boost::<a href="#exception">exception</a></code>.</p>
+</li>
+<li>
+<p>Confidently limit the throw site to provide only data that is available naturally.</p>
+</li>
+<li>
+<p>Use exception-neutral contexts between the throw and the catch to augment exceptions with more relevant data as they bubble up.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For example, in the throw statement below we only add the errno code, since this is the only failure-relevant information available in this context:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">struct</span> <span class="nc">exception_base</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">io_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">exception_base</span> <span class="p">{</span> <span class="p">};</span>
+<span class="k">struct</span> <span class="nc">file_read_error</span><span class="o">:</span> <span class="k">virtual</span> <span class="n">io_error</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_errno_code</span><span class="p">,</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">errno_code</span><span class="p">;</span>
+
+<span class="kt">void</span>
+<span class="nf">read_file</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">f</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="p">....</span>
+    <span class="kt">size_t</span> <span class="n">nr</span><span class="o">=</span><span class="n">fread</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">count</span><span class="p">,</span><span class="n">f</span><span class="p">);</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">ferror</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">throw</span> <span class="n">file_read_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">errno_code</span><span class="p">(</span><span class="n">errno</span><span class="p">);</span>
+    <span class="p">....</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#exception"><code>exception</code></a> | <a href="#error_info"><code>error_info</code></a> | <a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></p>
+</div>
+<div class="paragraph">
+<p>In a higher exception-neutral context, we add the file name to <em>any</em> exception that derives from <code>boost::<a href="#exception">exception</a></code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">tag_file_name</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">file_name</span><span class="p">;</span>
+
+<span class="p">....</span>
+<span class="k">try</span>
+    <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="kt">FILE</span> <span class="o">*</span> <span class="n">fp</span><span class="o">=</span><span class="n">fopen</span><span class="p">(</span><span class="s">"foo.txt"</span><span class="p">,</span><span class="s">"rt"</span><span class="p">)</span> <span class="p">)</span>
+        <span class="p">{</span>
+        <span class="n">shared_ptr</span><span class="o">&lt;</span><span class="kt">FILE</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="n">fclose</span><span class="p">);</span>
+        <span class="p">....</span>
+        <span class="n">read_file</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span> <span class="c1">//throws types deriving from boost::exception</span>
+        <span class="n">do_something</span><span class="p">();</span>
+        <span class="p">....</span>
+        <span class="p">}</span>
+    <span class="k">else</span>
+        <span class="k">throw</span> <span class="nf">file_open_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">errno_code</span><span class="p">(</span><span class="n">errno</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="k">catch</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">e</span> <span class="o">&lt;&lt;</span> <span class="n">file_name</span><span class="p">(</span><span class="s">"foo.txt"</span><span class="p">);</span>
+    <span class="k">throw</span><span class="p">;</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#exception"><code>exception</code></a> | <a href="#error_info"><code>error_info</code></a> | <a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></p>
+</div>
+<div class="paragraph">
+<p>Finally here is how the handler retrieves data from exceptions that derive from <code>boost::<a href="#exception">exception</a></code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(</span> <span class="n">io_error</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"I/O Error!</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+    <span class="k">if</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="k">const</span> <span class="o">*</span> <span class="n">fn</span><span class="o">=</span><span class="n">get_error_info</span><span class="o">&lt;</span><span class="n">file_name</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"File name: "</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">fn</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+
+    <span class="k">if</span><span class="p">(</span> <span class="kt">int</span> <span class="k">const</span> <span class="o">*</span> <span class="n">c</span><span class="o">=</span><span class="n">get_error_info</span><span class="o">&lt;</span><span class="n">errno_code</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"OS says: "</span> <span class="o">&lt;&lt;</span> <span class="n">strerror</span><span class="p">(</span><span class="o">*</span><span class="n">c</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#get_error_info"><code>get_error_info</code></a></p>
+</div>
+<div class="paragraph">
+<p>In addition, <code>boost::<a href="#diagnostic_information">diagnostic_information</a></code> can be used to compose an automatic (if not user-friendly) message that contains all of the <code><a href="#error_info">error_info</a></code> objects added to a <code>boost::<a href="#exception">exception</a></code>. This is useful for inclusion in logs and other diagnostic objects.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="frequently_asked_questions">Frequently Asked Questions</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_what_is_the_cost_of_calling_boostthrow_exception">What is the cost of calling boost::throw_exception?</h3>
+<div class="paragraph">
+<p>The cost is that <code>boost::<a href="#exception">exception</a></code> is added as a base of the exception emitted by <code>boost::<a href="#throw_exception">throw_exception</a></code> (unless the passed type already derives from <code>boost::<a href="#exception">exception</a></code>.)</p>
+</div>
+<div class="paragraph">
+<p>Calling <code>boost::<a href="#throw_exception">throw_exception</a></code> does not cause dynamic memory allocations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_is_the_cost_of_boost_throw_exception">What is the cost of BOOST_THROW_EXCEPTION?</h3>
+<div class="paragraph">
+<p>In addition to calling <code>boost::<a href="#throw_exception">throw_exception</a></code>, <code><a href="#BOOST_THROW_EXCEPTION">BOOST_THROW_EXCEPTION</a></code> invokes __FILE__ and __LINE__ macros. The space required to store the information is already included in sizeof(boost::<a href="#exception">exception</a>).</p>
+</div>
+<div class="paragraph">
+<p>Calling <code><a href="#BOOST_THROW_EXCEPTION">BOOST_THROW_EXCEPTION</a></code> does not cause dynamic memory allocations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_i_use_boostthrow_exception_or_boost_throw_exception_or_just_throw">Should I use boost::throw_exception or BOOST_THROW_EXCEPTION or just throw?</h3>
+<div class="paragraph">
+<p>The benefit of calling <code>boost::<a href="#throw_exception">throw_exception</a></code> instead of using throw directly is that it ensures that the emitted exception derives from <code>boost::<a href="#exception">exception</a></code> and that it is compatible with <code>boost::<a href="#current_exception">current_exception</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code><a href="#BOOST_THROW_EXCEPTION">BOOST_THROW_EXCEPTION</a></code> macro also results in a call to <code>boost::<a href="#throw_exception">throw_exception</a></code>, but in addition it records in the exception object the __FILE__ and __LINE__ of the throw, as well as the pretty name of the function that throws. This enables <code>boost::<a href="#diagnostic_information">diagnostic_information</a></code> to compose a more useful, if not user-friendly message.</p>
+</div>
+<div class="paragraph">
+<p>Typical use of <code>boost::<a href="#diagnostic_information">diagnostic_information</a></code> is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(...)</span>
+    <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span>
+        <span class="s">"Unexpected exception, diagnostic information follows:</span><span class="se">\n</span><span class="s">"</span> <span class="o">&lt;&lt;</span>
+        <span class="n">current_exception_diagnostic_information</span><span class="p">();</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is a possible message it may display&#8201;&#8212;&#8201;the information in the first line is only available if <code><a href="#BOOST_THROW_EXCEPTION">BOOST_THROW_EXCEPTION</a></code> was used to throw:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">example_io.cpp(70): Throw in function class boost::shared_ptr&lt;struct _iobuf&gt; __cdecl my_fopen(const char *,const char *)
+Dynamic exception type: class boost::exception_detail::clone_impl&lt;class fopen_error&gt;
+std::exception::what: example_io error
+[struct boost::errinfo_api_function_ *] = fopen
+[struct boost::errinfo_errno_ *] = 2, "No such file or directory"
+[struct boost::errinfo_file_name_ *] = tmp1.txt
+[struct boost::errinfo_file_open_mode_ *] = rb</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In some development environments, the first line in that message can be clicked to show the location of the throw in the debugger, so it&#8217;s easy to set a break point and run again to see the unexpected throw in the context of its call stack.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_doesnt_boostexception_derive_from_stdexception">Why doesn&#8217;t boost::exception derive from std::exception?</h3>
+<div class="paragraph">
+<p>Despite that <a href="#using_virtual_inheritance_in_exception_types">virtual inheritance should be used in deriving from base exception types</a>, quite often exception types (including the ones defined in the standard library) don&#8217;t derive from std::exception virtually.</p>
+</div>
+<div class="paragraph">
+<p>If <code>boost::<a href="#exception">exception</a></code> derives from std::exception, using the <code><a href="#enable_error_info">enable_error_info</a></code> function with such user-defined types would introduce dangerous ambiguity which would break all catch(std::exception &amp;) statements.</p>
+</div>
+<div class="paragraph">
+<p>Of course, <code>boost::<a href="#exception">exception</a></code> should not be used to replace std::exception as a base type in exception type hierarchies. Instead, it should be included as a virtual base, in addition to std::exception (which should probably also be derived virtually.)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_is_boostexception_abstract">Why is boost::exception abstract?</h3>
+<div class="paragraph">
+<p>To prevent exception-neutral contexts from erroneously erasing the type of the original exception when adding <code><a href="#error_info">error_info</a></code> to an active exception object:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">e</span> <span class="o">&lt;&lt;</span> <span class="n">foo_info</span><span class="p">(</span><span class="n">foo</span><span class="p">);</span>
+    <span class="k">throw</span> <span class="n">e</span><span class="p">;</span> <span class="c1">//Compile error: boost::exception is abstract</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The correct code is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">catch</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="n">e</span> <span class="o">&lt;&lt;</span> <span class="n">foo_info</span><span class="p">(</span><span class="n">foo</span><span class="p">);</span>
+    <span class="k">throw</span><span class="p">;</span> <span class="c1">//Okay, re-throwing the original exception object.</span>
+    <span class="p">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_use_operator_overload_for_adding_info_to_exceptions">Why use operator&lt;&lt; overload for adding info to exceptions?</h3>
+<div class="paragraph">
+<p>Before throwing an object of type that derives from <code>boost::<a href="#exception">exception</a></code>, it is often desirable to add one or more <code><a href="#error_info">error_info</a></code> objects in it. The syntactic sugar provided by <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> allows this to be done directly in a throw expression:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">throw</span> <span class="nf">error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">foo_info</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">bar_info</span><span class="p">(</span><span class="n">bar</span><span class="p">);</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_is_operator_allowed_to_throw">Why is operator&lt;&lt; allowed to throw?</h3>
+<div class="paragraph">
+<p>This question is referring to the following issue. Consider this throw statement example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">throw</span> <span class="nf">file_open_error</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">file_name</span><span class="p">(</span><span class="n">fn</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The intention here is to throw a file_open_error, however if <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code> fails to copy the std::string contained in the file_name <code><a href="#error_info">error_info</a></code> wrapper, a std::bad_alloc could propagate instead. This behavior seems undesirable to some programmers.</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>"Throwing an exception requires an object to throw.  A C&#43;&#43; implementation is required to have enough spare memory to be able to throw bad_alloc in case of memory exhaustion.  However, it is possible that throwing some other exception will cause memory exhaustion."</p>
+</div>
+</blockquote>
+<div class="attribution">
+&#8212; Bjarne Stroustrup<br>
+<cite>The C&#43;&#43; Programming Language 3rd Edition p. 371</cite>
+</div>
+</div>
+<div class="paragraph">
+<p>Therefore, the language itself does not guarantee that an attempt to throw an exception is guaranteed to throw an object of the specified type; propagating a std::bad_alloc seems to be a possibility even outside of the scope of Boost Exception.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_acknowledgements">Acknowledgements</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Thanks to Peter Dimov for his continuing help. Also thanks to Tobias Schwinger, Tom Brinkman, Pavel Vozenilek and everyone who participated in the review process.</p>
+</div>
+<hr>
+<div class="paragraph">
+<p>Copyright 2006-2026 Emil Dotchevski and Reverge Studios, Inc.</p>
+</div>
+<div class="paragraph">
+<p>Distributed under the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+</div>
+</div>
+</body>
+</html>
