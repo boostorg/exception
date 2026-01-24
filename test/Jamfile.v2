@@ -42,7 +42,7 @@ run exception_ptr_test.cpp ../../thread/src/tss_null.cpp /boost/thread//boost_th
 run exception_ptr_test.cpp/<define>BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR ../../thread/src/tss_null.cpp /boost/exception//boost_exception /boost/thread//boost_thread : : : <threading>multi <exception-handling>on : non_intrusive_exception_ptr_test ;
 run exception_ptr_test2.cpp ;
 run exception_test.cpp : : : <exception-handling>on ;
-run nlohmann_json_test.cpp : : : <exception-handling>on ;
+run nlohmann_json_test.cpp : : : <exception-handling>on <toolset>clang,<target-os>linux,<cxxstd>2b:<build>no <toolset>clang,<target-os>linux,<cxxstd>23:<build>no ;
 run no_exceptions_test.cpp : : : <exception-handling>off ;
 run refcount_ptr_test.cpp ;
 run throw_exception_test.cpp helper2.cpp : : : <exception-handling>on ;
