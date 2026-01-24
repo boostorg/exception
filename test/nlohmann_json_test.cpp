@@ -10,7 +10,7 @@
 #endif
 
 #include <boost/exception/diagnostic_information.hpp>
-#include <boost/exception/serialization/nlohmann_writer.hpp>
+#include <boost/exception/serialization/nlohmann_json_encoder.hpp>
 #include <boost/throw_exception.hpp>
 
 #include "nlohmann/json.hpp"
@@ -18,28 +18,30 @@
 #include <iomanip>
 #include <iostream>
 #include <exception>
+#include <vector>
 
-using output_writer = boost::exception_serialization::nlohmann_writer<nlohmann::ordered_json>;
+using output_encoder = boost::exception_serialization::nlohmann_json_encoder<nlohmann::ordered_json>;
 
-namespace boost { namespace exception_serialization {
-
-template <class Handle, class E>
-void
-serialize(Handle & h, E const & e, char const * name)
+namespace
+boost
     {
-    h.dispatch(
-        [&](nlohmann_writer<nlohmann::json> & w) { write_nested(w, e, name); },
-        [&](nlohmann_writer<nlohmann::ordered_json> & w) { write_nested(w, e, name); }
-    );
+    namespace
+    exception_serialization
+        {
+        template <class Handle, class E>
+        void
+        serialize(Handle & h, E const & e, char const * name)
+            {
+            h.dispatch(
+                [&](nlohmann_json_encoder<nlohmann::json> & enc) { output_at(enc, e, name); },
+                [&](nlohmann_json_encoder<nlohmann::ordered_json> & enc) { output_at(enc, e, name); } );
+            }
+        }
     }
 
-} }
-
-struct my_error_tag1;
-struct my_error_tag2;
-
-typedef boost::error_info<my_error_tag1, int> my_error1;
-typedef boost::error_info<my_error_tag2, std::string> my_error2;
+typedef boost::error_info<struct my_error1_, int> my_error1;
+typedef boost::error_info<struct my_error2_, std::string> my_error2;
+typedef boost::error_info<struct my_error4_, std::vector<int>> my_error4;
 
 struct
 my_info
@@ -57,8 +59,7 @@ my_info
         }
     };
 
-struct my_info_tag;
-typedef boost::error_info<my_info_tag, my_info> my_error3;
+typedef boost::error_info<struct my_error3_, my_info> my_error3;
 
 struct
 test_exception:
@@ -87,23 +88,30 @@ check_output(nlohmann::ordered_json const & j, bool has_source_location)
     BOOST_TEST(j.contains("std::exception::what"));
     BOOST_TEST_EQ(j["std::exception::what"].get<std::string>(), "test_exception::what");
 
-    BOOST_TEST(j.contains("my_error_tag1"));
-    BOOST_TEST_EQ(j["my_error_tag1"].get<int>(), 42);
+    BOOST_TEST(j.contains("my_error1_"));
+    BOOST_TEST_EQ(j["my_error1_"].get<int>(), 42);
 
-    BOOST_TEST(j.contains("my_error_tag2"));
-    BOOST_TEST_EQ(j["my_error_tag2"].get<std::string>(), "hello");
+    BOOST_TEST(j.contains("my_error2_"));
+    BOOST_TEST_EQ(j["my_error2_"].get<std::string>(), "hello");
 
-    BOOST_TEST(j.contains("my_info_tag"));
-    auto const & mij = j["my_info_tag"];
+    BOOST_TEST(j.contains("my_error3_"));
+    auto const & mij = j["my_error3_"];
     BOOST_TEST_EQ(mij["code"].get<int>(), 1);
     BOOST_TEST_EQ(mij["message"].get<std::string>(), "error one");
+
+    BOOST_TEST(j.contains("my_error4_"));
+    auto const & vec = j["my_error4_"];
+    BOOST_TEST_EQ(vec.size(), 3u);
+    BOOST_TEST_EQ(vec[0].get<int>(), 1);
+    BOOST_TEST_EQ(vec[1].get<int>(), 2);
+    BOOST_TEST_EQ(vec[2].get<int>(), 3);
     }
 
 int
 main()
     {
         {
-        std::cout << "Testing write_diagnostic_information_to:\n";
+        std::cout << "Testing serialize_diagnostic_information_to:\n";
         nlohmann::ordered_json j;
         try
             {
@@ -111,20 +119,21 @@ main()
             e <<
                 my_error1(42) <<
                 my_error2("hello") <<
-                my_error3({1, "error one"});
+                my_error3({1, "error one"}) <<
+                my_error4({1, 2, 3});
             BOOST_THROW_EXCEPTION(e);
             }
         catch( test_exception & e )
             {
-            output_writer w{j};
-            boost::write_diagnostic_information_to(e, w);
+            output_encoder enc{j};
+            boost::serialize_diagnostic_information_to(e, enc);
             }
         std::cout << std::setw(2) << j << std::endl;
         check_output(j, true);
         }
 
         {
-        std::cout << "\nTesting write_current_exception_diagnostic_information_to:\n";
+        std::cout << "\nTesting serialize_current_exception_diagnostic_information_to:\n";
         nlohmann::ordered_json j;
         try
             {
@@ -132,13 +141,14 @@ main()
             e <<
                 my_error1(42) <<
                 my_error2("hello") <<
-                my_error3({1, "error one"});
+                my_error3({1, "error one"}) <<
+                my_error4({1, 2, 3});
             BOOST_THROW_EXCEPTION(e);
             }
         catch( ... )
             {
-            output_writer w{j};
-            boost::write_current_exception_diagnostic_information_to(w);
+            output_encoder enc{j};
+            boost::serialize_current_exception_diagnostic_information_to(enc);
             }
         std::cout << std::setw(2) << j << std::endl;
         check_output(j, true);

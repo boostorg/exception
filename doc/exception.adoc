@@ -453,6 +453,164 @@ std::exception::what: example_io error
 [struct boost::errinfo_file_open_mode_ *] = rb
 ----
 
+[[tutorial_serialization]]
+=== Serialization
+
+Boost Exception provides a serialization API that enables exporting diagnostic information into different formats, such as JSON. This is useful for structured logging, remote debugging, or integrating with monitoring systems.
+
+To serialize diagnostic information, use the following functions:
+
+* `<<serialize_diagnostic_information_to,serialize_diagnostic_information_to>>` -- serializes diagnostic information for a given exception.
+* `<<serialize_current_exception_diagnostic_information_to,serialize_current_exception_diagnostic_information_to>>` -- serializes diagnostic information for the current exception.
+
+The serialization system uses `output` and `output_at` functions found via ADL:
+
+* `output(enc, x)` serializes value `x` directly to encoder `enc`.
+* `output_at(enc, x, name)` serializes value `x` to encoder `enc` as a named field.
+
+[[custom-encoders]]
+==== Custom Encoders
+
+To support exporting to a specific format, users define an encoder class with associated `output` and `output_at` function templates:
+
+[source,c++]
+----
+struct my_encoder
+{
+    template <class T>
+    friend void output(my_encoder & enc, T const & x)
+    {
+        // output value x to enc
+    }
+
+    template <class T>
+    friend void output_at(my_encoder & enc, T const & x, char const * name)
+    {
+        // output x to enc as a named field
+    }
+};
+----
+
+The `output_at` function typically creates a nested scope (e.g. a JSON object) and then calls `output` to serialize the value.
+
+To enable serialization to a custom encoder type, define a `<<serialize,serialize>>` function template in the `boost::exception_serialization` namespace:
+
+[source,c++]
+----
+namespace boost { namespace exception_serialization {
+
+template <class Handle, class T>
+void serialize(Handle & h, T const & x, char const * name)
+{
+    h.dispatch([&](my_encoder & enc) {
+        output_at(enc, x, name);
+    });
+}
+
+} }
+----
+
+The `<<serialize,serialize>>` function template takes a handle reference `h` (of unspecified type) that holds an encoder, the object to be serialized, and its type name. Call `h.dispatch` with a single-argument function F to detect the encoder type based on F's argument type; F is called only if the handle contains an encoder of that type.
+
+To support multiple output formats, pass multiple functions to `h.dispatch`:
+
+[source,c++]
+----
+h.dispatch(
+    [&](json_encoder & enc) { output_at(enc, x, name); },
+    [&](xml_encoder & enc) { output_at(enc, x, name); }
+);
+----
+
+==== JSON Serialization
+
+Boost Exception provides two JSON encoders:
+
+* `<<boost_json_encoder,boost_json_encoder>>` for https://www.boost.org/doc/libs/release/libs/json/[Boost.JSON]
+* `<<nlohmann_json_encoder,nlohmann_json_encoder>>` based on ADL calls to `to_json` (compatible with https://github.com/nlohmann/json[nlohmann/json])
+
+Below is an example using `nlohmann_json_encoder` with nlohmann/json. We just need to define the required `<<serialize,serialize>>` function template (see <<custom-encoders>>):
+
+[source,c++]
+----
+#include <boost/exception/serialization/nlohmann_json_encoder.hpp>
+#include "nlohmann/json.hpp"
+
+using nlohmann_json_encoder = boost::exception_serialization::nlohmann_json_encoder<nlohmann::json>;
+
+namespace boost { namespace exception_serialization {
+
+template <class Handle, class T>
+void serialize(Handle & h, T const & x, char const * name)
+{
+    h.dispatch([&](nlohmann_json_encoder & enc) {
+        output_at(enc, x, name);
+    });
+}
+
+} }
+----
+
+With this in place, we can output diagnostic information to JSON:
+
+[source,c++]
+----
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/throw_exception.hpp>
+#include <iostream>
+
+struct api_response
+{
+    int status;
+    std::string message;
+
+    template <class Json>
+    friend void to_json(Json & j, api_response const & e)
+    {
+        j["status"] = e.status;
+        j["message"] = e.message;
+    }
+};
+
+typedef boost::error_info<struct errinfo_api_response_, api_response> errinfo_api_response;
+typedef boost::error_info<struct errinfo_request_url_, std::string> errinfo_request_url;
+
+struct api_error : virtual boost::exception, virtual std::exception { };
+
+....
+
+nlohmann::json j;
+try
+{
+    BOOST_THROW_EXCEPTION(api_error()
+        << errinfo_api_response({403, "Access denied"})
+        << errinfo_request_url("/api/admin/settings"));
+}
+catch(boost::exception & e)
+{
+    nlohmann_json_encoder enc{j};
+    boost::serialize_diagnostic_information_to(enc, e);
+}
+std::cout << j.dump(2) << std::endl;
+----
+
+.Output:
+[source,json]
+----
+{
+  "errinfo_api_response_": {
+    "status": 403,
+    "message": "Access denied"
+  },
+  "errinfo_request_url_": "/api/admin/settings"
+}
+----
+
+[.text-right]
+<<serialize_diagnostic_information_to>> | <<nlohmann_json_encoder>>
+
+NOTE: In the example above, `api_response` uses an unqualified call to `to_json` for serialization. This is to demonstrate that `nlohmann_json_encoder` handles third party types with suitable `to_json` overloads automatically. If instead we defined a function `output` compatible with the Boost Exception serialization API, it would make `api_response` compatible with any Boost Exception encoder.
+
 [[synopsis]]
 == Synopsis
 
@@ -604,11 +762,17 @@ namespace boost
     char const * diagnostic_information_what( boost::exception const & e, bool verbose=true ) throw();
 
     std::string current_exception_diagnostic_information();
+
+    template <class Encoder, class E>
+    void serialize_diagnostic_information_to( Encoder & enc, E const & e );
+
+    template <class Encoder>
+    void serialize_current_exception_diagnostic_information_to( Encoder & enc );
 }
 ----
 
 [.text-right]
-Reference: <<diagnostic_information>> | <<diagnostic_information_what>> | <<current_exception_diagnostic_information>>
+Reference: <<diagnostic_information>> | <<diagnostic_information_what>> | <<current_exception_diagnostic_information>> | <<serialize_diagnostic_information_to>> | <<serialize_current_exception_diagnostic_information_to>>
 ====
 
 [[synopsis-current_exception_cast]]
@@ -904,6 +1068,67 @@ Reference: <<errinfo_type_info_name>>
 This header includes all Boost Exception headers except `<<synopsis-exception_ptr,boost/exception_ptr.hpp>>` (unless BOOST_NO_EXCEPTIONS is defined.)
 ====
 
+[[synopsis-serialization]]
+=== Serialization
+
+[[synopsis-boost_json_encoder]]
+==== `boost_json_encoder.hpp`
+
+====
+.#include <boost/exception/serialization/boost_json_encoder.hpp>
+[source,c++]
+----
+namespace boost { namespace exception_serialization {
+
+struct boost_json_encoder
+{
+    boost::json::value & v_;
+
+    // Enabled if x is assignable to boost::json::value, or
+    // if tag_invoke is defined for boost::json::value_from_tag.
+    template <class T>
+    friend void output( boost_json_encoder &, T const & x );
+
+    template <class T>
+    friend void output_at( boost_json_encoder &, T const &, char const * name );
+};
+
+} }
+----
+
+[.text-right]
+Reference: <<boost_json_encoder>>
+====
+
+[[synopsis-nlohmann_json_encoder]]
+==== `nlohmann_json_encoder.hpp`
+
+====
+.#include <boost/exception/serialization/nlohmann_json_encoder.hpp>
+[source,c++]
+----
+namespace boost { namespace exception_serialization {
+
+template <class Json>
+struct nlohmann_json_encoder
+{
+    Json & j_;
+
+    // Enabled if to_json is available for Json and T.
+    template <class T>
+    friend void output( nlohmann_json_encoder &, T const & x );
+
+    template <class T>
+    friend void output_at( nlohmann_json_encoder &, T const &, char const * name );
+};
+
+} }
+----
+
+[.text-right]
+Reference: <<nlohmann_json_encoder>>
+====
+
 [[reference]]
 == Reference
 
@@ -919,60 +1144,36 @@ endif::[]
 [[types]]
 === Types
 
-[[exception]]
-==== `exception`
+[[boost_json_encoder]]
+==== `boost_json_encoder`
 
-.#include <boost/exception/exception.hpp>
+.#include <boost/exception/serialization/boost_json_encoder.hpp>
 [source,c++]
 ----
-namespace boost
+namespace boost { namespace exception_serialization {
+
+struct boost_json_encoder
 {
-    class exception
-    {
-    protected:
+    boost::json::value & v_;
 
-        exception();
-        exception( exception const & x );
-        ~exception();
-    };
-}
+    // Enabled if x is assignable to boost::json::value, or
+    // if tag_invoke is defined for boost::json::value_from_tag.
+    template <class T>
+    friend void output( boost_json_encoder &, T const & x );
+
+    template <class T>
+    friend void output_at( boost_json_encoder &, T const &, char const * name );
+};
+
+} }
 ----
 
-Class `boost::exception` is designed to be used as a universal base for user-defined exception types.
+The `boost_json_encoder` type serializes objects to JSON format using https://www.boost.org/doc/libs/release/libs/json/[Boost.JSON]. The `output` function is enabled for:
 
-An object of any type deriving from `boost::exception` can store data of arbitrary types, using the `<<error_info,error_info>>` wrapper and `<<exception_operator_shl,operator<<>>`.
+* Types directly assignable to `boost::json::value`
+* Types for which a `tag_invoke` overload for `value_from_tag` can be found via ADL
 
-To retrieve data from a `boost::exception` object, use the `<<get_error_info,get_error_info>>` function template.
-
-[[exception_constructors]]
-===== `exception::exception`
-
-[source,c++]
-----
-exception();
-exception( exception const & x );
-----
-
-Effects: ::
-+
---
-* Default constructor: initializes an empty `boost::exception` object.
-* Copy constructor: initializes a `boost::exception` object which shares with x the pointers to all currently stored data. Subsequently, data can be added to or retrieved from both exception objects interchangeably, however doing so concurrently from multiple threads is undefined behavior.
---
-
-Throws: :: Nothing.
-
-[[exception_destructor]]
-===== `exception::~exception`
-
-[source,c++]
-----
-~exception();
-----
-
-Effects: :: Releases all resources associated with the `boost::exception` object.
-
-Throws: :: Nothing.
+See <<tutorial_serialization>>.
 
 '''
 
@@ -1288,6 +1489,63 @@ This type is designed to be used as a standard `<<error_info,error_info>>` insta
 
 '''
 
+[[exception]]
+==== `exception`
+
+.#include <boost/exception/exception.hpp>
+[source,c++]
+----
+namespace boost
+{
+    class exception
+    {
+    protected:
+
+        exception();
+        exception( exception const & x );
+        ~exception();
+    };
+}
+----
+
+Class `boost::exception` is designed to be used as a universal base for user-defined exception types.
+
+An object of any type deriving from `boost::exception` can store data of arbitrary types, using the `<<error_info,error_info>>` wrapper and `<<exception_operator_shl,operator<<>>`.
+
+To retrieve data from a `boost::exception` object, use the `<<get_error_info,get_error_info>>` function template.
+
+[[exception_constructors]]
+===== `exception::exception`
+
+[source,c++]
+----
+exception();
+exception( exception const & x );
+----
+
+Effects: ::
++
+--
+* Default constructor: initializes an empty `boost::exception` object.
+* Copy constructor: initializes a `boost::exception` object which shares with x the pointers to all currently stored data. Subsequently, data can be added to or retrieved from both exception objects interchangeably, however doing so concurrently from multiple threads is undefined behavior.
+--
+
+Throws: :: Nothing.
+
+[[exception_destructor]]
+===== `exception::~exception`
+
+[source,c++]
+----
+~exception();
+----
+
+Effects: :: Releases all resources associated with the `boost::exception` object.
+
+Throws: :: Nothing.
+
+'''
+
 [[exception_ptr]]
 ==== `exception_ptr`
 
@@ -1318,6 +1576,34 @@ Thread safety: :: The `exception_ptr` type is "as thread-safe as built-in types"
 All other simultaneous accesses result in undefined behavior.
 
 Nesting of exceptions: :: An `exception_ptr` can be added as `<<error_info,error_info>>` to any `boost::<<exception,exception>>`. This is a convenient way to nest exceptions. There is no limit on the depth of the nesting, however cyclic references result in undefined behavior.
+
+'''
+
+[[nlohmann_json_encoder]]
+==== `nlohmann_json_encoder`
+
+.#include <boost/exception/serialization/nlohmann_json_encoder.hpp>
+[source,c++]
+----
+namespace boost { namespace exception_serialization {
+
+template <class Json>
+struct nlohmann_json_encoder
+{
+    Json & j_;
+
+    // Enabled if to_json is available for Json and T.
+    template <class T>
+    friend void output( nlohmann_json_encoder &, T const & x );
+
+    template <class T>
+    friend void output_at( nlohmann_json_encoder &, T const &, char const * name );
+};
+
+} }
+----
+
+The `nlohmann_json_encoder` type serializes objects to JSON format based on ADL calls to `to_json`. This is compatible with https://github.com/nlohmann/json[nlohmann/json]. See <<tutorial_serialization>>.
 
 '''
 
@@ -1717,6 +2003,74 @@ namespace boost
 Precondition: :: ep shall not be null.
 
 Throws: :: The exception to which ep refers.
+
+'''
+
+[[serialize]]
+==== `serialize`
+
+[source,c++]
+----
+namespace boost { namespace exception_serialization {
+
+template <class Handle, class E>
+void serialize( Handle & h, E const & x, char const * name );
+
+} }
+----
+
+The `serialize` function template is a user-defined customization point. If provided, it is called by the serialization system to output objects to an encoder; see <<custom-encoders>>.
+
+'''
+
+[[serialize_current_exception_diagnostic_information_to]]
+==== `serialize_current_exception_diagnostic_information_to`
+
+.#include <boost/exception/diagnostic_information.hpp>
+[source,c++]
+----
+namespace boost
+{
+    template <class Encoder>
+    void serialize_current_exception_diagnostic_information_to( Encoder & enc );
+}
+----
+
+Requirements: :: This function must not be called outside of a catch block.
+
+Effects: :: Serializes diagnostic information for the current exception to the encoder `enc`. Equivalent to calling `<<serialize_diagnostic_information_to,serialize_diagnostic_information_to>>` with the current exception object.
+
+See <<tutorial_serialization>>.
+
+'''
+
+[[serialize_diagnostic_information_to]]
+==== `serialize_diagnostic_information_to`
+
+.#include <boost/exception/diagnostic_information.hpp>
+[source,c++]
+----
+namespace boost
+{
+    template <class Encoder, class E>
+    void serialize_diagnostic_information_to( Encoder & enc, E const & e );
+}
+----
+
+Serializes diagnostic information for the exception `e` to the encoder `enc`.
+
+Requirements: :: E must be convertible to either `boost::<<exception,exception>> const &` or `std::exception const &`.
+
+Effects: :: Outputs diagnostic information about the exception to the encoder, including:
++
+--
+* Throw location (file, line, function) if available
+* Dynamic exception type (if RTTI is enabled)
+* `std::exception::what()` if available
+* All `<<error_info,error_info>>` objects stored in the exception
+--
+
+See <<tutorial_serialization>>.
 
 '''
 

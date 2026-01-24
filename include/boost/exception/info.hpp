@@ -11,7 +11,7 @@
 #include <boost/exception/to_string_stub.hpp>
 #include <boost/exception/detail/error_info_impl.hpp>
 #include <boost/exception/detail/shared_ptr.hpp>
-#include <boost/exception/detail/writer.hpp>
+#include <boost/exception/detail/encoder.hpp>
 #include <map>
 #include <type_traits>
 
@@ -33,30 +33,11 @@ boost
     namespace
     exception_serialization
         {
-        template <class Writer, class T, class... Unused>
-        typename std::enable_if<std::is_base_of<exception_detail::writer, Writer>::value>::type
-        serialize(Writer &, T const &, char const *, Unused && ...)
+        // Stub
+        template <class Encoder, class T, class... Deprioritize>
+        typename std::enable_if<std::is_base_of<exception_detail::encoder, Encoder>::value>::type
+        serialize(Encoder &, T const &, char const *, Deprioritize...)
             {
-            }
-
-        template <class Writer, class Tag, class T>
-        void
-        write(Writer & w, error_info<Tag, T> const & e)
-            {
-            write(w, e.value());
-            }
-        }
-
-    namespace
-    exception_detail
-        {
-        template <class Tag, class T>
-        void
-        serialize_(writer & w, error_info<Tag,T> const & x)
-            {
-            using namespace boost::exception_serialization;
-            char buf[256];
-            serialize(w, x.value(), to_zstr(buf, get_pretty_tag_type_name<Tag>()));
             }
         }
 
@@ -89,9 +70,11 @@ boost
     inline
     void
     error_info<Tag,T>::
-    write_to(exception_detail::writer & w) const
+    serialize_to(exception_detail::encoder & e) const
         {
-        exception_detail::serialize_(w, *this);
+        char buf[256];
+        using namespace exception_serialization;
+        serialize(e, value(), to_zstr(buf, exception_detail::get_pretty_tag_type_name<Tag>()));
         }
 
     namespace
@@ -150,12 +133,12 @@ boost
                 }
 
             void
-            write_to( writer & w ) const
+            serialize_to( encoder & e ) const
                 {
                 for( error_info_map::const_iterator i=info_.begin(),end=info_.end(); i!=end; ++i )
                     {
                     error_info_base const & x = *i->second;
-                    x.write_to(w);
+                    x.serialize_to(e);
                     }
                 }
 

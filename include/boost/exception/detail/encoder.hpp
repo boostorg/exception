@@ -3,8 +3,8 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef BOOST_EXCEPTION_DETAIL_WRITER_HPP_INCLUDED
-#define BOOST_EXCEPTION_DETAIL_WRITER_HPP_INCLUDED
+#ifndef BOOST_EXCEPTION_DETAIL_ENCODER_HPP_INCLUDED
+#define BOOST_EXCEPTION_DETAIL_ENCODER_HPP_INCLUDED
 
 #include <boost/exception/detail/type_info.hpp>
 #include <type_traits>
@@ -18,7 +18,7 @@ boost
     namespace
     exception_serialization
         {
-        struct writer_adl {};
+        struct encoder_adl {};
         }
 
     namespace
@@ -42,14 +42,14 @@ boost
             };
 
         class
-        writer:
-            exception_serialization::writer_adl
+        encoder:
+            exception_serialization::encoder_adl
             {
-            writer(writer const &) = delete;
-            writer & operator=(writer const &) = delete;
+            encoder(encoder const &) = delete;
+            encoder & operator=(encoder const &) = delete;
 
             core::typeinfo const * type_;
-            void * w_;
+            void * e_;
 
             bool
             dispatch_()
@@ -61,10 +61,10 @@ boost
             bool
             dispatch_(F1 && f1, Fn && ... fn)
                 {
-                using writer_type = typename std::decay<typename first_arg<decltype(&std::decay<F1>::type::operator())>::type>::type;
-                if (writer_type * w = get<writer_type>())
+                using encoder_type = typename std::decay<typename first_arg<decltype(&std::decay<F1>::type::operator())>::type>::type;
+                if (encoder_type * e = get<encoder_type>())
                     {
-                    std::forward<F1>(f1)(*w);
+                    std::forward<F1>(f1)(*e);
                     return true;
                     }
                 return dispatch_(std::forward<Fn>(fn)...);
@@ -72,21 +72,21 @@ boost
 
             protected:
 
-            template <class Writer>
+            template <class Encoder>
             explicit
-            writer(Writer * w) noexcept:
-                type_(&BOOST_CORE_TYPEID(Writer)),
-                w_(w)
+            encoder(Encoder * e) noexcept:
+                type_(&BOOST_CORE_TYPEID(Encoder)),
+                e_(e)
                 {
                 }
 
             public:
 
-            template <class Writer>
-            Writer *
+            template <class Encoder>
+            Encoder *
             get() noexcept
                 {
-                return *type_ == BOOST_CORE_TYPEID(Writer) ? static_cast<Writer *>(w_) : nullptr;
+                return *type_ == BOOST_CORE_TYPEID(Encoder) ? static_cast<Encoder *>(e_) : nullptr;
                 }
 
             template <class... Fn>
@@ -97,14 +97,14 @@ boost
                 }
             };
 
-        template <class Writer>
+        template <class Encoder>
         struct
-        writer_adaptor:
-            writer
+        encoder_adaptor:
+            encoder
             {
             explicit
-            writer_adaptor(Writer & w) noexcept:
-                writer(&w)
+            encoder_adaptor(Encoder & e) noexcept:
+                encoder(&e)
                 {
                 }
             };

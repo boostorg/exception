@@ -209,9 +209,9 @@ boost
     namespace
     exception_detail
         {
-        template <class Writer>
+        template <class Encoder>
         void
-        write_diagnostic_information_to_impl_( boost::exception const * be, std::exception const * se, Writer & w )
+        serialize_diagnostic_information_to_impl_( boost::exception const * be, std::exception const * se, Encoder & e )
             {
             if( !be && !se )
                 return;
@@ -224,44 +224,44 @@ boost
             if( be )
                 {
                 if( char const * const * f=get_error_info<throw_file>(*be) )
-                    write_nested(w, *f, "throw_file");
+                    output_at(e, *f, "throw_file");
                 if( int const * l=get_error_info<throw_line>(*be) )
-                    write_nested(w, *l, "throw_line");
+                    output_at(e, *l, "throw_line");
                 if( char const * const * fn=get_error_info<throw_function>(*be) )
-                    write_nested(w, *fn, "throw_function");
+                    output_at(e, *fn, "throw_function");
                 }
 #ifndef BOOST_NO_RTTI
             if( be || se )
-                write_nested(w, core::demangle((be?(BOOST_EXCEPTION_DYNAMIC_TYPEID(*be)):(BOOST_EXCEPTION_DYNAMIC_TYPEID(*se))).type_->name()).c_str(), "dynamic_exception_type");
+                output_at(e, core::demangle((be?(BOOST_EXCEPTION_DYNAMIC_TYPEID(*be)):(BOOST_EXCEPTION_DYNAMIC_TYPEID(*se))).type_->name()).c_str(), "dynamic_exception_type");
 #endif
             if( se )
                 if( char const * wh = se->what() )
-                    write_nested(w, wh, "std::exception::what");
+                    output_at(e, wh, "std::exception::what");
             if( be )
                 if( error_info_container * c = be->data_.get() )
                     {
-                    writer_adaptor<Writer> wa(w);
-                    c->write_to(wa);
+                    encoder_adaptor<Encoder> ea(e);
+                    c->serialize_to(ea);
                     }
             }
         }
 
-    template <class T, class Writer>
+    template <class T, class Encoder>
     void
-    write_diagnostic_information_to( T const & e, Writer & w )
+    serialize_diagnostic_information_to( T const & e, Encoder & enc )
         {
-        exception_detail::write_diagnostic_information_to_impl_(exception_detail::get_boost_exception(&e),exception_detail::get_std_exception(&e),w);
+        exception_detail::serialize_diagnostic_information_to_impl_(exception_detail::get_boost_exception(&e),exception_detail::get_std_exception(&e),enc);
         }
 
 #ifndef BOOST_NO_EXCEPTIONS
-    template <class Writer>
+    template <class Encoder>
     void
-    write_current_exception_diagnostic_information_to( Writer & w )
+    serialize_current_exception_diagnostic_information_to( Encoder & e )
         {
         boost::exception const * be=current_exception_cast<boost::exception const>();
         std::exception const * se=current_exception_cast<std::exception const>();
         if( be || se )
-            exception_detail::write_diagnostic_information_to_impl_(be,se,w);
+            exception_detail::serialize_diagnostic_information_to_impl_(be,se,e);
         }
 #endif
     }

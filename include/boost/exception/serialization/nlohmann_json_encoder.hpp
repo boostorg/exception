@@ -3,8 +3,8 @@
 //Distributed under the Boost Software License, Version 1.0. (See accompanying
 //file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_WRITER_HPP_INCLUDED
-#define BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_WRITER_HPP_INCLUDED
+#ifndef BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_JSON_ENCODER_HPP_INCLUDED
+#define BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_JSON_ENCODER_HPP_INCLUDED
 
 #include <utility>
 
@@ -16,25 +16,25 @@ boost
         {
         template <class Json>
         struct
-        nlohmann_writer
+        nlohmann_json_encoder
             {
             Json & j_;
 
             template <class T>
             friend
             auto
-            write(nlohmann_writer & w, T const & x) -> decltype(to_json(std::declval<Json &>(), x))
+            output(nlohmann_json_encoder & e, T const & x) -> decltype(to_json(std::declval<Json &>(), x))
                 {
-                to_json(w.j_, x);
+                to_json(e.j_, x);
                 }
 
             template <class T>
             friend
             void
-            write_nested(nlohmann_writer & w, T const & x, char const * name)
+            output_at(nlohmann_json_encoder & e, T const & x, char const * name)
                 {
-                nlohmann_writer nested{w.j_[name]};
-                write(nested, x);
+                nlohmann_json_encoder nested{e.j_[name]};
+                output(nested, x);
                 }
             };
         }
