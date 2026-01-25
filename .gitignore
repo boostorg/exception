@@ -2,3 +2,4 @@
 /.vscode/settings.json
 .DS_Store
 doc/html/index.html
+/test/nlohmann/
