@@ -52,6 +52,12 @@ function switch_style()
 <li><a href="#exception_types_as_simple_semantic_tags">Exception Types as Simple Semantic Tags</a></li>
 <li><a href="#using_virtual_inheritance_in_exception_types">Using Virtual Inheritance in Exception Types</a></li>
 <li><a href="#tutorial_diagnostic_information">Diagnostic Information</a></li>
+<li><a href="#tutorial_serialization">Serialization</a>
+<ul class="sectlevel3">
+<li><a href="#custom-encoders">Custom Encoders</a></li>
+<li><a href="#_json_serialization">JSON Serialization</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#synopsis">Synopsis</a>
@@ -75,13 +81,19 @@ function switch_style()
 <li><a href="#synopsis-errinfo_nested_exception"><code>errinfo_nested_exception.hpp</code></a></li>
 <li><a href="#synopsis-errinfo_type_info_name"><code>errinfo_type_info_name.hpp</code></a></li>
 <li><a href="#synopsis-all"><code>all.hpp</code></a></li>
+<li><a href="#synopsis-serialization">Serialization</a>
+<ul class="sectlevel3">
+<li><a href="#synopsis-boost_json_encoder"><code>boost_json_encoder.hpp</code></a></li>
+<li><a href="#synopsis-nlohmann_json_encoder"><code>nlohmann_json_encoder.hpp</code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#reference">Reference</a>
 <ul class="sectlevel2">
 <li><a href="#types">Types</a>
 <ul class="sectlevel3">
-<li><a href="#exception"><code>exception</code></a></li>
+<li><a href="#boost_json_encoder"><code>boost_json_encoder</code></a></li>
 <li><a href="#error_info"><code>error_info</code></a></li>
 <li><a href="#errinfo_api_function"><code>errinfo_api_function</code></a></li>
 <li><a href="#errinfo_at_line"><code>errinfo_at_line</code></a></li>
@@ -91,7 +103,9 @@ function switch_style()
 <li><a href="#errinfo_file_open_mode"><code>errinfo_file_open_mode</code></a></li>
 <li><a href="#errinfo_nested_exception"><code>errinfo_nested_exception</code></a></li>
 <li><a href="#errinfo_type_info_name"><code>errinfo_type_info_name</code></a></li>
+<li><a href="#exception"><code>exception</code></a></li>
 <li><a href="#exception_ptr"><code>exception_ptr</code></a></li>
+<li><a href="#nlohmann_json_encoder"><code>nlohmann_json_encoder</code></a></li>
 <li><a href="#original_exception_type"><code>original_exception_type</code></a></li>
 <li><a href="#unknown_exception"><code>unknown_exception</code></a></li>
 </ul>
@@ -109,6 +123,9 @@ function switch_style()
 <li><a href="#get_error_info"><code>get_error_info</code></a></li>
 <li><a href="#exception_operator_shl"><code>operator&lt;&lt;</code></a></li>
 <li><a href="#rethrow_exception"><code>rethrow_exception</code></a></li>
+<li><a href="#serialize"><code>serialize</code></a></li>
+<li><a href="#serialize_current_exception_diagnostic_information_to"><code>serialize_current_exception_diagnostic_information_to</code></a></li>
+<li><a href="#serialize_diagnostic_information_to"><code>serialize_diagnostic_information_to</code></a></li>
 <li><a href="#throw_exception"><code>throw_exception</code></a></li>
 <li><a href="#tuple_operator_shl"><code>tuple/operator&lt;&lt;</code></a></li>
 </ul>
@@ -671,6 +688,207 @@ std::exception::what: example_io error
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="tutorial_serialization">Serialization</h3>
+<div class="paragraph">
+<p>Boost Exception provides a serialization API that enables exporting diagnostic information into different formats, such as JSON. This is useful for structured logging, remote debugging, or integrating with monitoring systems.</p>
+</div>
+<div class="paragraph">
+<p>To serialize diagnostic information, use the following functions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code><a href="#serialize_diagnostic_information_to">serialize_diagnostic_information_to</a></code>&#8201;&#8212;&#8201;serializes diagnostic information for a given exception.</p>
+</li>
+<li>
+<p><code><a href="#serialize_current_exception_diagnostic_information_to">serialize_current_exception_diagnostic_information_to</a></code>&#8201;&#8212;&#8201;serializes diagnostic information for the current exception.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The serialization system uses <code>output</code> and <code>output_at</code> functions found via ADL:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>output(enc, x)</code> serializes value <code>x</code> directly to encoder <code>enc</code>.</p>
+</li>
+<li>
+<p><code>output_at(enc, x, name)</code> serializes value <code>x</code> to encoder <code>enc</code> as a named field.</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="custom-encoders">Custom Encoders</h4>
+<div class="paragraph">
+<p>To support exporting to a specific format, users define an encoder class with associated <code>output</code> and <code>output_at</code> function templates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">struct</span> <span class="nc">my_encoder</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output</span><span class="p">(</span><span class="n">my_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// output value x to enc</span>
+    <span class="p">}</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="nf">output_at</span><span class="p">(</span><span class="n">my_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// output x to enc as a named field</span>
+    <span class="p">}</span>
+<span class="p">};</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>output_at</code> function typically creates a nested scope (e.g. a JSON object) and then calls <code>output</code> to serialize the value.</p>
+</div>
+<div class="paragraph">
+<p>To enable serialization to a custom encoder type, define a <code><a href="#serialize">serialize</a></code> function template in the <code>boost::exception_serialization</code> namespace:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Handle</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span><span class="n">Handle</span> <span class="o">&amp;</span> <span class="n">h</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">h</span><span class="p">.</span><span class="n">dispatch</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">my_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">output_at</span><span class="p">(</span><span class="n">enc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code><a href="#serialize">serialize</a></code> function template takes a handle reference <code>h</code> (of unspecified type) that holds an encoder, the object to be serialized, and its type name. Call <code>h.dispatch</code> with a single-argument function F to detect the encoder type based on F&#8217;s argument type; F is called only if the handle contains an encoder of that type.</p>
+</div>
+<div class="paragraph">
+<p>To support multiple output formats, pass multiple functions to <code>h.dispatch</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">h</span><span class="p">.</span><span class="n">dispatch</span><span class="p">(</span>
+    <span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">json_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">)</span> <span class="p">{</span> <span class="n">output_at</span><span class="p">(</span><span class="n">enc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span> <span class="p">},</span>
+    <span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">xml_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">)</span> <span class="p">{</span> <span class="n">output_at</span><span class="p">(</span><span class="n">enc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span> <span class="p">}</span>
+<span class="p">);</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_json_serialization">JSON Serialization</h4>
+<div class="paragraph">
+<p>Boost Exception provides two JSON encoders:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code><a href="#boost_json_encoder">boost_json_encoder</a></code> for <a href="https://www.boost.org/doc/libs/release/libs/json/">Boost.JSON</a></p>
+</li>
+<li>
+<p><code><a href="#nlohmann_json_encoder">nlohmann_json_encoder</a></code> based on ADL calls to <code>to_json</code> (compatible with <a href="https://github.com/nlohmann/json">nlohmann/json</a>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Below is an example using <code>nlohmann_json_encoder</code> with nlohmann/json. We just need to define the required <code><a href="#serialize">serialize</a></code> function template (see <a href="#custom-encoders">Custom Encoders</a>):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/serialization/nlohmann_json_encoder.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">"nlohmann/json.hpp"</span><span class="cp">
+</span>
+<span class="k">using</span> <span class="n">nlohmann_json_encoder</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception_serialization</span><span class="o">::</span><span class="n">nlohmann_json_encoder</span><span class="o">&lt;</span><span class="n">nlohmann</span><span class="o">::</span><span class="n">json</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Handle</span><span class="p">,</span> <span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span><span class="n">Handle</span> <span class="o">&amp;</span> <span class="n">h</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">h</span><span class="p">.</span><span class="n">dispatch</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">nlohmann_json_encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">output_at</span><span class="p">(</span><span class="n">enc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this in place, we can output diagnostic information to JSON:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="cp">#include</span> <span class="cpf">&lt;boost/exception/diagnostic_information.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;boost/throw_exception.hpp&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span>
+<span class="k">struct</span> <span class="nc">api_response</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span><span class="p">;</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Json</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">to_json</span><span class="p">(</span><span class="n">Json</span> <span class="o">&amp;</span> <span class="n">j</span><span class="p">,</span> <span class="n">api_response</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">j</span><span class="p">[</span><span class="s">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">.</span><span class="n">status</span><span class="p">;</span>
+        <span class="n">j</span><span class="p">[</span><span class="s">"message"</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span><span class="p">.</span><span class="n">message</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_api_response_</span><span class="p">,</span> <span class="n">api_response</span><span class="o">&gt;</span> <span class="n">errinfo_api_response</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">error_info</span><span class="o">&lt;</span><span class="k">struct</span> <span class="nc">errinfo_request_url_</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">errinfo_request_url</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nc">api_error</span> <span class="o">:</span> <span class="k">virtual</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span><span class="p">,</span> <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span> <span class="p">{</span> <span class="p">};</span>
+
+<span class="p">....</span>
+
+<span class="n">nlohmann</span><span class="o">::</span><span class="n">json</span> <span class="n">j</span><span class="p">;</span>
+<span class="k">try</span>
+<span class="p">{</span>
+    <span class="n">BOOST_THROW_EXCEPTION</span><span class="p">(</span><span class="n">api_error</span><span class="p">()</span>
+        <span class="o">&lt;&lt;</span> <span class="n">errinfo_api_response</span><span class="p">({</span><span class="mi">403</span><span class="p">,</span> <span class="s">"Access denied"</span><span class="p">})</span>
+        <span class="o">&lt;&lt;</span> <span class="n">errinfo_request_url</span><span class="p">(</span><span class="s">"/api/admin/settings"</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="k">catch</span><span class="p">(</span><span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">nlohmann_json_encoder</span> <span class="n">enc</span><span class="p">{</span><span class="n">j</span><span class="p">};</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">serialize_diagnostic_information_to</span><span class="p">(</span><span class="n">enc</span><span class="p">,</span> <span class="n">e</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">j</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Output:</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"errinfo_api_response_"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"status"</span><span class="p">:</span><span class="w"> </span><span class="mi">403</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Access denied"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"errinfo_request_url_"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/api/admin/settings"</span><span class="w">
+</span><span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p><a href="#serialize_diagnostic_information_to"><code>serialize_diagnostic_information_to</code></a> | <a href="#nlohmann_json_encoder"><code>nlohmann_json_encoder</code></a></p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In the example above, <code>api_response</code> uses an unqualified call to <code>to_json</code> for serialization. This is to demonstrate that <code>nlohmann_json_encoder</code> handles third party types with suitable <code>to_json</code> overloads automatically. If instead we defined a function <code>output</code> compatible with the Boost Exception serialization API, it would make <code>api_response</code> compatible with any Boost Exception encoder.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -835,11 +1053,17 @@ std::exception::what: example_io error
     <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">diagnostic_information_what</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">verbose</span><span class="o">=</span><span class="nb">true</span> <span class="p">)</span> <span class="k">throw</span><span class="p">();</span>
 
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">current_exception_diagnostic_information</span><span class="p">();</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">,</span> <span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">serialize_diagnostic_information_to</span><span class="p">(</span> <span class="n">Encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">,</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">serialize_current_exception_diagnostic_information_to</span><span class="p">(</span> <span class="n">Encoder</span> <span class="o">&amp;</span> <span class="n">enc</span> <span class="p">);</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph text-right">
-<p>Reference: <a href="#diagnostic_information"><code>diagnostic_information</code></a> | <a href="#diagnostic_information_what"><code>diagnostic_information_what</code></a> | <a href="#current_exception_diagnostic_information"><code>current_exception_diagnostic_information</code></a></p>
+<p>Reference: <a href="#diagnostic_information"><code>diagnostic_information</code></a> | <a href="#diagnostic_information_what"><code>diagnostic_information_what</code></a> | <a href="#current_exception_diagnostic_information"><code>current_exception_diagnostic_information</code></a> | <a href="#serialize_diagnostic_information_to"><code>serialize_diagnostic_information_to</code></a> | <a href="#serialize_current_exception_diagnostic_information_to"><code>serialize_current_exception_diagnostic_information_to</code></a></p>
 </div>
 </div>
 </div>
@@ -1164,6 +1388,71 @@ std::exception::what: example_io error
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="synopsis-serialization">Serialization</h3>
+<div class="sect3">
+<h4 id="synopsis-boost_json_encoder"><code>boost_json_encoder.hpp</code></h4>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/serialization/boost_json_encoder.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">struct</span> <span class="nc">boost_json_encoder</span>
+<span class="p">{</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">json</span><span class="o">::</span><span class="n">value</span> <span class="o">&amp;</span> <span class="n">v_</span><span class="p">;</span>
+
+    <span class="c1">// Enabled if x is assignable to boost::json::value, or</span>
+    <span class="c1">// if tag_invoke is defined for boost::json::value_from_tag.</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output</span><span class="p">(</span> <span class="n">boost_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output_at</span><span class="p">(</span> <span class="n">boost_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">);</span>
+<span class="p">};</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#boost_json_encoder"><code>boost_json_encoder</code></a></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="synopsis-nlohmann_json_encoder"><code>nlohmann_json_encoder.hpp</code></h4>
+<div class="exampleblock">
+<div class="content">
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/serialization/nlohmann_json_encoder.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Json</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">nlohmann_json_encoder</span>
+<span class="p">{</span>
+    <span class="n">Json</span> <span class="o">&amp;</span> <span class="n">j_</span><span class="p">;</span>
+
+    <span class="c1">// Enabled if to_json is available for Json and T.</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output</span><span class="p">(</span> <span class="n">nlohmann_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output_at</span><span class="p">(</span> <span class="n">nlohmann_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">);</span>
+<span class="p">};</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph text-right">
+<p>Reference: <a href="#nlohmann_json_encoder"><code>nlohmann_json_encoder</code></a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1194,87 +1483,45 @@ The contents of each Reference section are organized alphabetically.
 <div class="sect2">
 <h3 id="types">Types</h3>
 <div class="sect3">
-<h4 id="exception"><code>exception</code></h4>
+<h4 id="boost_json_encoder"><code>boost_json_encoder</code></h4>
 <div class="listingblock">
-<div class="title">#include &lt;boost/exception/exception.hpp&gt;</div>
+<div class="title">#include &lt;boost/exception/serialization/boost_json_encoder.hpp&gt;</div>
 <div class="content">
-<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
-<span class="p">{</span>
-    <span class="k">class</span> <span class="nc">exception</span>
-    <span class="p">{</span>
-    <span class="nl">protected:</span>
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
 
-        <span class="n">exception</span><span class="p">();</span>
-        <span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
-        <span class="o">~</span><span class="n">exception</span><span class="p">();</span>
-    <span class="p">};</span>
-<span class="p">}</span></code></pre>
+<span class="k">struct</span> <span class="nc">boost_json_encoder</span>
+<span class="p">{</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">json</span><span class="o">::</span><span class="n">value</span> <span class="o">&amp;</span> <span class="n">v_</span><span class="p">;</span>
+
+    <span class="c1">// Enabled if x is assignable to boost::json::value, or</span>
+    <span class="c1">// if tag_invoke is defined for boost::json::value_from_tag.</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output</span><span class="p">(</span> <span class="n">boost_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output_at</span><span class="p">(</span> <span class="n">boost_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">);</span>
+<span class="p">};</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Class <code>boost::exception</code> is designed to be used as a universal base for user-defined exception types.</p>
+<p>The <code>boost_json_encoder</code> type serializes objects to JSON format using <a href="https://www.boost.org/doc/libs/release/libs/json/">Boost.JSON</a>. The <code>output</code> function is enabled for:</p>
 </div>
-<div class="paragraph">
-<p>An object of any type deriving from <code>boost::exception</code> can store data of arbitrary types, using the <code><a href="#error_info">error_info</a></code> wrapper and <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>.</p>
-</div>
-<div class="paragraph">
-<p>To retrieve data from a <code>boost::exception</code> object, use the <code><a href="#get_error_info">get_error_info</a></code> function template.</p>
-</div>
-<div class="sect4">
-<h5 id="exception_constructors"><code>exception::exception</code></h5>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">exception</span><span class="p">();</span>
-<span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span></code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Effects: </dt>
-<dd>
-<div class="openblock">
-<div class="content">
 <div class="ulist">
 <ul>
 <li>
-<p>Default constructor: initializes an empty <code>boost::exception</code> object.</p>
+<p>Types directly assignable to <code>boost::json::value</code></p>
 </li>
 <li>
-<p>Copy constructor: initializes a <code>boost::exception</code> object which shares with x the pointers to all currently stored data. Subsequently, data can be added to or retrieved from both exception objects interchangeably, however doing so concurrently from multiple threads is undefined behavior.</p>
+<p>Types for which a <code>tag_invoke</code> overload for <code>value_from_tag</code> can be found via ADL</p>
 </li>
 </ul>
 </div>
-</div>
-</div>
-</dd>
-<dt class="hdlist1">Throws: </dt>
-<dd>
-<p>Nothing.</p>
-</dd>
-</dl>
-</div>
-</div>
-<div class="sect4">
-<h5 id="exception_destructor"><code>exception::~exception</code></h5>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="o">~</span><span class="n">exception</span><span class="p">();</span></code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Effects: </dt>
-<dd>
-<p>Releases all resources associated with the <code>boost::exception</code> object.</p>
-</dd>
-<dt class="hdlist1">Throws: </dt>
-<dd>
-<p>Nothing.</p>
-</dd>
-</dl>
+<div class="paragraph">
+<p>See <a href="#tutorial_serialization">Serialization</a>.</p>
 </div>
 <hr>
-</div>
 </div>
 <div class="sect3">
 <h4 id="error_info"><code>error_info</code></h4>
@@ -1636,6 +1883,89 @@ The contents of each Reference section are organized alphabetically.
 <hr>
 </div>
 <div class="sect3">
+<h4 id="exception"><code>exception</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/exception.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">class</span> <span class="nc">exception</span>
+    <span class="p">{</span>
+    <span class="nl">protected:</span>
+
+        <span class="n">exception</span><span class="p">();</span>
+        <span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+        <span class="o">~</span><span class="n">exception</span><span class="p">();</span>
+    <span class="p">};</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Class <code>boost::exception</code> is designed to be used as a universal base for user-defined exception types.</p>
+</div>
+<div class="paragraph">
+<p>An object of any type deriving from <code>boost::exception</code> can store data of arbitrary types, using the <code><a href="#error_info">error_info</a></code> wrapper and <code><a href="#exception_operator_shl">operator&lt;&lt;</a></code>.</p>
+</div>
+<div class="paragraph">
+<p>To retrieve data from a <code>boost::exception</code> object, use the <code><a href="#get_error_info">get_error_info</a></code> function template.</p>
+</div>
+<div class="sect4">
+<h5 id="exception_constructors"><code>exception::exception</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="n">exception</span><span class="p">();</span>
+<span class="n">exception</span><span class="p">(</span> <span class="n">exception</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>Default constructor: initializes an empty <code>boost::exception</code> object.</p>
+</li>
+<li>
+<p>Copy constructor: initializes a <code>boost::exception</code> object which shares with x the pointers to all currently stored data. Subsequently, data can be added to or retrieved from both exception objects interchangeably, however doing so concurrently from multiple threads is undefined behavior.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect4">
+<h5 id="exception_destructor"><code>exception::~exception</code></h5>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="o">~</span><span class="n">exception</span><span class="p">();</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Releases all resources associated with the <code>boost::exception</code> object.</p>
+</dd>
+<dt class="hdlist1">Throws: </dt>
+<dd>
+<p>Nothing.</p>
+</dd>
+</dl>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect3">
 <h4 id="exception_ptr"><code>exception_ptr</code></h4>
 <div class="listingblock">
 <div class="title">#include &lt;boost/exception_ptr.hpp&gt;</div>
@@ -1686,6 +2016,34 @@ The contents of each Reference section are organized alphabetically.
 <p>An <code>exception_ptr</code> can be added as <code><a href="#error_info">error_info</a></code> to any <code>boost::<a href="#exception">exception</a></code>. This is a convenient way to nest exceptions. There is no limit on the depth of the nesting, however cyclic references result in undefined behavior.</p>
 </dd>
 </dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="nlohmann_json_encoder"><code>nlohmann_json_encoder</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/serialization/nlohmann_json_encoder.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Json</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">nlohmann_json_encoder</span>
+<span class="p">{</span>
+    <span class="n">Json</span> <span class="o">&amp;</span> <span class="n">j_</span><span class="p">;</span>
+
+    <span class="c1">// Enabled if to_json is available for Json and T.</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output</span><span class="p">(</span> <span class="n">nlohmann_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span> <span class="p">);</span>
+
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="p">&gt;</span>
+    <span class="k">friend</span> <span class="kt">void</span> <span class="n">output_at</span><span class="p">(</span> <span class="n">nlohmann_json_encoder</span> <span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span> <span class="k">const</span> <span class="o">&amp;</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">);</span>
+<span class="p">};</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>nlohmann_json_encoder</code> type serializes objects to JSON format based on ADL calls to <code>to_json</code>. This is compatible with <a href="https://github.com/nlohmann/json">nlohmann/json</a>. See <a href="#tutorial_serialization">Serialization</a>.</p>
 </div>
 <hr>
 </div>
@@ -2268,6 +2626,104 @@ std::exception::what: example_io error
 <p>The exception to which ep refers.</p>
 </dd>
 </dl>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="serialize"><code>serialize</code></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span> <span class="p">{</span> <span class="k">namespace</span> <span class="n">exception_serialization</span> <span class="p">{</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Handle</span><span class="p">,</span> <span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+<span class="kt">void</span> <span class="n">serialize</span><span class="p">(</span> <span class="n">Handle</span> <span class="o">&amp;</span> <span class="n">h</span><span class="p">,</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">x</span><span class="p">,</span> <span class="kt">char</span> <span class="k">const</span> <span class="o">*</span> <span class="n">name</span> <span class="p">);</span>
+
+<span class="p">}</span> <span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>serialize</code> function template is a user-defined customization point. If provided, it is called by the serialization system to output objects to an encoder; see <a href="#custom-encoders">Custom Encoders</a>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="serialize_current_exception_diagnostic_information_to"><code>serialize_current_exception_diagnostic_information_to</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">serialize_current_exception_diagnostic_information_to</span><span class="p">(</span> <span class="n">Encoder</span> <span class="o">&amp;</span> <span class="n">enc</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>This function must not be called outside of a catch block.</p>
+</dd>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Serializes diagnostic information for the current exception to the encoder <code>enc</code>. Equivalent to calling <code><a href="#serialize_diagnostic_information_to">serialize_diagnostic_information_to</a></code> with the current exception object.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>See <a href="#tutorial_serialization">Serialization</a>.</p>
+</div>
+<hr>
+</div>
+<div class="sect3">
+<h4 id="serialize_diagnostic_information_to"><code>serialize_diagnostic_information_to</code></h4>
+<div class="listingblock">
+<div class="title">#include &lt;boost/exception/diagnostic_information.hpp&gt;</div>
+<div class="content">
+<pre class="rouge highlight nowrap"><code data-lang="c++"><span class="k">namespace</span> <span class="n">boost</span>
+<span class="p">{</span>
+    <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">Encoder</span><span class="p">,</span> <span class="k">class</span> <span class="nc">E</span><span class="p">&gt;</span>
+    <span class="kt">void</span> <span class="n">serialize_diagnostic_information_to</span><span class="p">(</span> <span class="n">Encoder</span> <span class="o">&amp;</span> <span class="n">enc</span><span class="p">,</span> <span class="n">E</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Serializes diagnostic information for the exception <code>e</code> to the encoder <code>enc</code>.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Requirements: </dt>
+<dd>
+<p>E must be convertible to either <code>boost::<a href="#exception">exception</a> const &amp;</code> or <code>std::exception const &amp;</code>.</p>
+</dd>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Outputs diagnostic information about the exception to the encoder, including:</p>
+<div class="openblock">
+<div class="content">
+<div class="ulist">
+<ul>
+<li>
+<p>Throw location (file, line, function) if available</p>
+</li>
+<li>
+<p>Dynamic exception type (if RTTI is enabled)</p>
+</li>
+<li>
+<p><code>std::exception::what()</code> if available</p>
+</li>
+<li>
+<p>All <code><a href="#error_info">error_info</a></code> objects stored in the exception</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>See <a href="#tutorial_serialization">Serialization</a>.</p>
 </div>
 <hr>
 </div>
