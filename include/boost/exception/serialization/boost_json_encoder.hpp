@@ -6,43 +6,36 @@
 #ifndef BOOST_EXCEPTION_SERIALIZATION_BOOST_JSON_ENCODER_HPP_INCLUDED
 #define BOOST_EXCEPTION_SERIALIZATION_BOOST_JSON_ENCODER_HPP_INCLUDED
 
+#include <type_traits>
 #include <utility>
+
+namespace boost { namespace json {
+
+class value;
+
+template <class T>
+void value_from(T &&, value &);
+
+} }
 
 namespace
 boost
     {
     namespace
-    json
-        {
-        class value;
-        struct value_from_tag;
-        }
-
-    namespace
     exception_serialization
         {
-        // Baast.JSON does not provide ADL interface for serializing user-defined types.
-        // This limits the functionality of boost_json_encoder to only types that provide tag_invoke.
-        template <class Value = boost::json::value, class ValueFromTag = boost::json::value_from_tag>
+        template <class Value = boost::json::value>
         struct
         boost_json_encoder_
             {
             Value & v_;
 
-            template <class T>
+            template <class Encoder, class T, class... Deprioritize>
             friend
-            auto
-            output(boost_json_encoder_ & e, T const & x) -> decltype(std::declval<Value &>() = x, void())
+            typename std::enable_if<std::is_same<Encoder, boost_json_encoder_>::value>::type
+            output(Encoder & e, T const & x, Deprioritize...)
                 {
-                e.v_ = x;
-                }
-
-            template <class T>
-            friend
-            auto
-            output(boost_json_encoder_ & e, T const & x) -> decltype(tag_invoke(std::declval<ValueFromTag>(), std::declval<Value &>(), x), void())
-                {
-                tag_invoke(ValueFromTag{}, e.v_, x);
+                boost::json::value_from(x, e.v_);
                 }
 
             template <class T>
