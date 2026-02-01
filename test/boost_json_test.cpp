@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <iostream>
 #include <exception>
+#include <vector>
 
 using output_encoder = boost::exception_serialization::boost_json_encoder;
 
@@ -39,6 +40,7 @@ boost
 
 typedef boost::error_info<struct my_error1_, int> my_error1;
 typedef boost::error_info<struct my_error2_, std::string> my_error2;
+typedef boost::error_info<struct my_error4_, std::vector<int>> my_error4;
 
 struct
 my_info
@@ -97,6 +99,13 @@ check_output(boost::json::value const & j, bool has_source_location)
     auto const & mij = obj.at("my_error3_").as_object();
     BOOST_TEST_EQ(mij.at("code").as_int64(), 1);
     BOOST_TEST_EQ(mij.at("message").as_string(), "error one");
+
+    BOOST_TEST(obj.contains("my_error4_"));
+    auto const & vec = obj.at("my_error4_").as_array();
+    BOOST_TEST_EQ(vec.size(), 3u);
+    BOOST_TEST_EQ(vec[0].as_int64(), 1);
+    BOOST_TEST_EQ(vec[1].as_int64(), 2);
+    BOOST_TEST_EQ(vec[2].as_int64(), 3);
     }
 
 int
@@ -111,7 +120,8 @@ main()
             e <<
                 my_error1(42) <<
                 my_error2("hello") <<
-                my_error3({1, "error one"});
+                my_error3({1, "error one"}) <<
+                my_error4({1, 2, 3});
             BOOST_THROW_EXCEPTION(e);
             }
         catch( test_exception & e )
@@ -132,7 +142,8 @@ main()
             e <<
                 my_error1(42) <<
                 my_error2("hello") <<
-                my_error3({1, "error one"});
+                my_error3({1, "error one"}) <<
+                my_error4({1, 2, 3});
             BOOST_THROW_EXCEPTION(e);
             }
         catch( ... )

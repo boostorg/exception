@@ -1084,8 +1084,9 @@ struct boost_json_encoder
 {
     boost::json::value & v_;
 
-    // Enabled if x is assignable to boost::json::value, or
-    // if tag_invoke is defined for boost::json::value_from_tag.
+    // Uses unspecified SFINAE expression designed to make the
+    // overload selected only if no other compatible overload is found.
+    // Implemented in terms of boost::json::value_from.
     template <class T>
     friend void output( boost_json_encoder &, T const & x );
 
@@ -1114,7 +1115,9 @@ struct nlohmann_json_encoder
 {
     Json & j_;
 
-    // Enabled if to_json is available for Json and T.
+    // Uses unspecified SFINAE expression designed to make the
+    // overload selected only if no other compatible overload is found.
+    // Implemented in terms of to_json.
     template <class T>
     friend void output( nlohmann_json_encoder &, T const & x );
 
@@ -1156,8 +1159,9 @@ struct boost_json_encoder
 {
     boost::json::value & v_;
 
-    // Enabled if x is assignable to boost::json::value, or
-    // if tag_invoke is defined for boost::json::value_from_tag.
+    // Uses unspecified SFINAE expression designed to make the
+    // overload selected only if no other compatible overload is found.
+    // Implemented in terms of boost::json::value_from.
     template <class T>
     friend void output( boost_json_encoder &, T const & x );
 
@@ -1168,10 +1172,7 @@ struct boost_json_encoder
 } }
 ----
 
-The `boost_json_encoder` type serializes objects to JSON format using https://www.boost.org/doc/libs/release/libs/json/[Boost.JSON]. The `output` function is enabled for:
-
-* Types directly assignable to `boost::json::value`
-* Types for which a `tag_invoke` overload for `value_from_tag` can be found via ADL
+The `boost_json_encoder` type serializes objects to JSON format using https://www.boost.org/doc/libs/release/libs/json/[Boost.JSON]. The `output` function is implemented in terms of `boost::json::value_from`.
 
 See <<tutorial_serialization>>.
 
@@ -1592,7 +1593,9 @@ struct nlohmann_json_encoder
 {
     Json & j_;
 
-    // Enabled if to_json is available for Json and T.
+    // Uses unspecified SFINAE expression designed to make the
+    // overload selected only if no other compatible overload is found.
+    // Implemented in terms of to_json.
     template <class T>
     friend void output( nlohmann_json_encoder &, T const & x );
 
@@ -1603,7 +1606,9 @@ struct nlohmann_json_encoder
 } }
 ----
 
-The `nlohmann_json_encoder` type serializes objects to JSON format based on ADL calls to `to_json`. This is compatible with https://github.com/nlohmann/json[nlohmann/json]. See <<tutorial_serialization>>.
+The `nlohmann_json_encoder` type serializes objects to JSON format based on ADL calls to `to_json`. This is compatible with https://github.com/nlohmann/json[nlohmann/json].
+
+See <<tutorial_serialization>>.
 
 '''
 

@@ -6,6 +6,7 @@
 #ifndef BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_JSON_ENCODER_HPP_INCLUDED
 #define BOOST_EXCEPTION_SERIALIZATION_NLOHMANN_JSON_ENCODER_HPP_INCLUDED
 
+#include <type_traits>
 #include <utility>
 
 namespace
@@ -20,12 +21,12 @@ boost
             {
             Json & j_;
 
-            template <class T>
-            friend
-            auto
-            output(nlohmann_json_encoder & e, T const & x) -> decltype(to_json(std::declval<Json &>(), x))
+            template <class Encoder, class T, class... Deprioritize>
+            friend typename std::enable_if<std::is_same<Encoder, nlohmann_json_encoder>::value, Json *>::type
+            output(Encoder & e, T const & x, Deprioritize...)
                 {
                 to_json(e.j_, x);
+                return 0;
                 }
 
             template <class T>
